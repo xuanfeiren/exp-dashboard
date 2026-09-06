@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>experiment hub</title>
+<style>
+:root{color-scheme:light dark}*{box-sizing:border-box}
+body{margin:0;font:13px/1.45 -apple-system,"Segoe UI",system-ui,sans-serif;display:flex;height:100vh;background:#f9f9f7;color:#0b0b0b}
+@media (prefers-color-scheme:dark){body{background:#0d0d0d;color:#fff}aside{background:#1a1a19!important;border-color:rgba(255,255,255,.1)!important}aside button{color:#c3c2b7!important}aside .title{color:#fff!important}}
+aside{width:240px;flex:none;background:#fcfcfb;border-right:1px solid rgba(11,11,11,.1);padding:14px 10px;display:flex;flex-direction:column;gap:3px;overflow:auto}
+aside .title{font-size:14px;font-weight:700;margin:2px 8px 10px}
+aside button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;font-size:12.5px;font-weight:600;padding:8px 10px;border:none;border-radius:8px;background:transparent;color:#52514e;cursor:pointer}
+aside button:hover{background:rgba(42,120,214,.08)} aside button.on{background:#2a78d6;color:#fff}
+aside .dot{width:8px;height:8px;border-radius:50%;background:#bbb;flex:none} .dot.fresh{background:#0ca30c} .dot.stale{background:#e34948} .dot.done{background:#2a78d6}
+aside .meta{font-size:10.5px;font-weight:400;opacity:.75;margin-left:auto;white-space:nowrap}
+aside .foot{margin-top:auto;font-size:10.5px;color:#898781;padding:8px}
+main{flex:1;display:flex} iframe{border:none;width:100%;height:100%}
+</style>
+</head>
+<body>
+<aside><div class="title">Experiments</div><div id="list"></div><div class="foot">green = collector heartbeat fresh · red = stale · blue = campaign finished</div></aside>
+<main><iframe id="frame"></iframe></main>
+<script>
+const $ = id => document.getElementById(id); let CAMPS = [];
+function pick(c) { document.querySelectorAll("aside button").forEach(b => b.classList.toggle("on", b.dataset.name === c.name));
+  $("frame").src = c.path.replace(/\/?$/, "/") + "index.html?v=" + Date.now(); location.hash = c.name; }
+async function load() {
+  CAMPS = await (await fetch("campaigns.json?t=" + Date.now())).json();
+  $("list").innerHTML = CAMPS.map(c => `<button data-name="${c.name}"><span class="dot" id="dot-${c.name}"></span><span>${c.title || c.name}</span><span class="meta" id="meta-${c.name}"></span></button>`).join("");
+  document.querySelectorAll("aside button").forEach(b => b.onclick = () => pick(CAMPS.find(c => c.name === b.dataset.name)));
+  const want = location.hash.slice(1); pick(CAMPS.find(c => c.name === want) || CAMPS[0]); beat();
+}
+async function beat() {  // sidebar dots: read each campaign's live.json heartbeat
+  for (const c of CAMPS) { try { const d = await (await fetch(c.path.replace(/\/?$/, "/") + "live.json?t=" + Date.now())).json();
+      const age = Date.now() / 1000 - d.updated, arms = d.arms || [], done = arms.length && arms.every(a => ["done", "failed", "killed"].includes(a.status));
+      $("dot-" + c.name).className = "dot " + (done ? "done" : age > 3 * (d.collector_interval_s || 30) + 15 ? "stale" : "fresh");
+      $("meta-" + c.name).textContent = done ? "done" : `${arms.filter(a => a.status === "running").length} run · ${Math.round(age)}s`; }
+    catch (e) { $("dot-" + c.name).className = "dot"; } }
+  setTimeout(beat, 30000);
+}
+load();
+</script>
+</body>
+</html>
