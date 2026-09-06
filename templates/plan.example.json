@@ -4,99 +4,415 @@
   "title": "Communication-content ladder — demo campaign",
   "subtitle": "3 conditions × 2 tasks × 2 seeds · 6 min per arm · 4 concurrent",
   "lang": "en",
-
   "description": "# Goal\nDoes the *content* of what agents share change where a team ends up, or only how fast it gets there?\n\n# Design\nThree communication conditions (none / prose lessons / verbatim code) on two optimisation tasks, two seeds each. Every arm is a team of 5 agents with a fixed wall-clock budget; the metric is the best latency the team verifies before the budget runs out.\n\n# Pre-registration\n- Claims are made only at the pooled level (both tasks together).\n- Primary test: lessons > none, paired over (task, seed), Wilcoxon, effect ≥ 0.05 in frontier-ratio.\n- Small n is direction only: n=2 per cell tells us where to spend the next round, not what is true.\n\n# Budget\n12 arms × 6 min ≈ 25 min wall-clock at 4 concurrent, then ~30 min of analysis.",
-
   "hypotheses": [
-    { "id": "H1", "text": "Any channel beats no channel at the endpoint.", "prediction": "lessons and code both below baseline final median on both tasks", "status": "pending", "evidence": "" },
-    { "id": "H2", "text": "Content effect is an inverted U peaking at prose (lessons).", "prediction": "lessons < code < none on final latency", "status": "pending", "evidence": "" },
-    { "id": "H3", "text": "Sharing code lowers token cost (copying replaces re-derivation).", "prediction": "code arm cumulative tokens ≤ 0.8 × baseline", "status": "pending", "evidence": "" }
+    {
+      "id": "H1",
+      "text": "Any channel beats no channel at the endpoint.",
+      "prediction": "lessons and code both below baseline final median on both tasks",
+      "status": "pending",
+      "evidence": ""
+    },
+    {
+      "id": "H2",
+      "text": "Content effect is an inverted U peaking at prose (lessons).",
+      "prediction": "lessons < code < none on final latency",
+      "status": "pending",
+      "evidence": ""
+    },
+    {
+      "id": "H3",
+      "text": "Sharing code lowers token cost (copying replaces re-derivation).",
+      "prediction": "code arm cumulative tokens ≤ 0.8 × baseline",
+      "status": "pending",
+      "evidence": ""
+    }
   ],
-
   "factors": [
-    { "id": "condition", "label": "condition", "levels": [
-      { "id": "baseline", "label": "no channel", "color": "#7a7a72", "desc": "5 independent agents, best-of-5" },
-      { "id": "lessons",  "label": "prose lessons", "desc": "agents broadcast short lessons; no code" },
-      { "id": "code",     "label": "verbatim code", "desc": "agents may broadcast working kernels" } ] },
-    { "id": "task", "label": "task", "levels": [
-      { "id": "taskA", "label": "task A (fast eval)", "desc": "~10 s per evaluation, smooth landscape" },
-      { "id": "taskB", "label": "task B (slow eval)", "desc": "~60 s per evaluation, plateau + rare jumps" } ] },
-    { "id": "seed", "label": "seed", "levels": [ { "id": "1" }, { "id": "2" } ] }
+    {
+      "id": "condition",
+      "label": "condition",
+      "levels": [
+        {
+          "id": "baseline",
+          "label": "no channel",
+          "color": "#7a7a72",
+          "desc": "5 independent agents, best-of-5"
+        },
+        {
+          "id": "lessons",
+          "label": "prose lessons",
+          "desc": "agents broadcast short lessons; no code"
+        },
+        {
+          "id": "code",
+          "label": "verbatim code",
+          "desc": "agents may broadcast working kernels"
+        }
+      ]
+    },
+    {
+      "id": "task",
+      "label": "task",
+      "levels": [
+        {
+          "id": "taskA",
+          "label": "task A (fast eval)",
+          "desc": "~10 s per evaluation, smooth landscape"
+        },
+        {
+          "id": "taskB",
+          "label": "task B (slow eval)",
+          "desc": "~60 s per evaluation, plateau + rare jumps"
+        }
+      ]
+    },
+    {
+      "id": "seed",
+      "label": "seed",
+      "levels": [
+        {
+          "id": "1"
+        },
+        {
+          "id": "2"
+        }
+      ]
+    }
   ],
-  "baseline": { "factor": "condition", "level": "baseline" },
-
+  "baseline": {
+    "factor": "condition",
+    "level": "baseline"
+  },
   "budget_min": 6,
   "finalize_min": 0.5,
   "concurrency": 4,
   "silent_after_min": 2,
-
   "arms": null,
-
   "phases": [
-    { "id": "smoke", "name": "Smoke", "kind": "arms", "match": "^S", "est_min": 7,
+    {
+      "id": "smoke",
+      "name": "Smoke",
+      "kind": "arms",
+      "match": "^baseline-.*-1$",
+      "est_min": 7,
       "purpose": "Prove the pipeline end to end on one arm per task before spending budget.",
-      "method": "baseline condition, seed 1, full budget.", "criteria": "≥1 verified result per task; collector sees events within 3 min.",
-      "outputs": "go / no-go for wave 1" },
-    { "id": "w1", "name": "Wave 1 — seed 1", "kind": "arms", "match": "^W1", "est_min": 13, "depends_on": ["smoke"],
-      "purpose": "First full pass over conditions × tasks.", "method": "4 arms in parallel, 6 min each.",
-      "criteria": "no silent arms; curves separate by condition on at least one task.", "outputs": "provisional ranking" },
-    { "id": "w2", "name": "Wave 2 — seed 2", "kind": "arms", "match": "^W2", "est_min": 13, "depends_on": ["w1"],
-      "purpose": "Replicate with a second seed to get paired data.", "method": "same as wave 1.",
-      "criteria": "paired Wilcoxon on pooled (task, seed).", "outputs": "H1–H3 verdicts" },
-    { "id": "analysis", "name": "Analysis & report", "kind": "manual", "est_min": 30, "depends_on": ["w2"],
+      "method": "baseline condition, seed 1, full budget.",
+      "criteria": "≥1 verified result per task; collector sees events within 3 min.",
+      "outputs": "go / no-go for wave 1"
+    },
+    {
+      "id": "w1",
+      "name": "Wave 1 — seed 1",
+      "kind": "arms",
+      "match": "^(lessons|code)-.*-1$",
+      "est_min": 13,
+      "depends_on": [
+        "smoke"
+      ],
+      "purpose": "First full pass over conditions × tasks.",
+      "method": "4 arms in parallel, 6 min each.",
+      "criteria": "no silent arms; curves separate by condition on at least one task.",
+      "outputs": "provisional ranking"
+    },
+    {
+      "id": "w2",
+      "name": "Wave 2 — seed 2",
+      "kind": "arms",
+      "match": "-2$",
+      "est_min": 13,
+      "depends_on": [
+        "w1"
+      ],
+      "purpose": "Replicate with a second seed to get paired data.",
+      "method": "same as wave 1.",
+      "criteria": "paired Wilcoxon on pooled (task, seed).",
+      "outputs": "H1–H3 verdicts"
+    },
+    {
+      "id": "analysis",
+      "name": "Analysis & report",
+      "kind": "manual",
+      "est_min": 30,
+      "depends_on": [
+        "w2"
+      ],
       "purpose": "Evaluate pre-registered gates, write the report, freeze a snapshot of this page.",
-      "method": "scripts/snapshot.py + notebook", "criteria": "gates marked pass/fail with p-values", "outputs": "report.md, snapshot html" }
+      "method": "scripts/snapshot.py + notebook",
+      "criteria": "gates marked pass/fail with p-values",
+      "outputs": "report.md, snapshot html"
+    }
   ],
-
   "metrics": [
-    { "id": "latency_us", "label": "latency", "unit": "µs", "lower_is_better": true, "log": true, "curve": "best_so_far" },
-    { "id": "tokens_m",   "label": "cumulative tokens", "unit": "M", "lower_is_better": true, "curve": "cumsum" },
-    { "id": "ok",         "label": "verified evals", "curve": "cumsum" }
+    {
+      "id": "latency_us",
+      "label": "latency",
+      "unit": "µs",
+      "lower_is_better": true,
+      "log": true,
+      "curve": "best_so_far"
+    },
+    {
+      "id": "tokens_m",
+      "label": "cumulative tokens",
+      "unit": "M",
+      "lower_is_better": true,
+      "curve": "cumsum"
+    },
+    {
+      "id": "ok",
+      "label": "verified evals",
+      "curve": "cumsum"
+    }
   ],
   "x_axes": [
-    { "id": "minutes", "label": "wall-clock (min)" },
-    { "id": "evals",   "label": "# evaluations" },
-    { "id": "tokens_m", "label": "cumulative tokens (M)", "cumsum": true }
+    {
+      "id": "minutes",
+      "label": "wall-clock (min)"
+    },
+    {
+      "id": "evals",
+      "label": "# evaluations"
+    },
+    {
+      "id": "tokens_m",
+      "label": "cumulative tokens (M)",
+      "cumsum": true
+    }
   ],
   "scalars": [
-    { "id": "final_latency_us", "label": "final latency", "unit": "µs", "lower_is_better": true, "derive": { "metric": "latency_us", "how": "best" } },
-    { "id": "first_ok_min", "label": "first verified result (min)", "lower_is_better": true, "derive": { "how": "first_ok_min" } },
-    { "id": "n_evals", "label": "# evaluations", "derive": { "how": "count" } },
-    { "id": "n_ok", "label": "# verified", "derive": { "how": "count_ok" } },
-    { "id": "tokens_total_m", "label": "tokens (M)", "unit": "M", "lower_is_better": true, "derive": { "metric": "tokens_m", "how": "sum" } },
-    { "id": "cost_usd", "label": "cost ($)", "unit": "$", "lower_is_better": true },
-    { "id": "catchup_min", "label": "minutes to reach baseline final", "lower_is_better": true, "derive": { "how": "catchup", "metric": "latency_us" } }
+    {
+      "id": "final_latency_us",
+      "label": "final latency",
+      "unit": "µs",
+      "lower_is_better": true,
+      "derive": {
+        "metric": "latency_us",
+        "how": "best"
+      }
+    },
+    {
+      "id": "first_ok_min",
+      "label": "first verified result (min)",
+      "lower_is_better": true,
+      "derive": {
+        "how": "first_ok_min"
+      }
+    },
+    {
+      "id": "n_evals",
+      "label": "# evaluations",
+      "derive": {
+        "how": "count"
+      }
+    },
+    {
+      "id": "n_ok",
+      "label": "# verified",
+      "derive": {
+        "how": "count_ok"
+      }
+    },
+    {
+      "id": "tokens_total_m",
+      "label": "tokens (M)",
+      "unit": "M",
+      "lower_is_better": true,
+      "derive": {
+        "metric": "tokens_m",
+        "how": "sum"
+      }
+    },
+    {
+      "id": "cost_usd",
+      "label": "cost ($)",
+      "unit": "$",
+      "lower_is_better": true
+    },
+    {
+      "id": "catchup_min",
+      "label": "minutes to reach baseline final",
+      "lower_is_better": true,
+      "derive": {
+        "how": "catchup",
+        "metric": "latency_us"
+      }
+    }
   ],
-
   "plots": [
-    { "id": "curve_time", "tab": "overview", "type": "curve", "title": "Best-so-far latency vs wall-clock", "y": "latency_us", "x": "minutes",
-      "group": "condition", "facet": "task", "agg": "median_iqr", "ref": "baseline_final",
-      "explain": "Median over seeds of each team's best verified latency; band = IQR (≥3 seeds). Dashed = baseline final median. Lower is better." },
-    { "id": "curve_evals", "type": "curve", "title": "Best-so-far latency vs # evaluations", "y": "latency_us", "x": "evals",
-      "group": "condition", "facet": "task", "agg": "median_iqr",
-      "explain": "Same curves on an evaluation-count axis: separates 'smarter per eval' from 'more evals per minute'." },
-    { "id": "curve_tokens", "type": "curve", "title": "Best-so-far latency vs cumulative tokens", "y": "latency_us", "x": "tokens_m",
-      "group": "condition", "facet": "task", "agg": "median_iqr",
-      "explain": "Token-efficiency view (H3). A curve that sits left of another reached the same quality for fewer tokens." },
-    { "id": "final_bar", "tab": "overview", "type": "bar", "title": "Final latency by condition", "y": "final_latency_us", "group": "condition", "facet": "task",
-      "agg": "median_iqr", "ref": "baseline", "explain": "Bar = median over seeds, whisker = min–max, dots = arms. Provisional (best-so-far) for unfinished arms." },
-    { "id": "cost_scatter", "type": "scatter", "title": "Cost vs final latency", "x": "cost_usd", "y": "final_latency_us", "color": "condition", "facet": "task",
-      "explain": "One dot per arm. Bottom-left is the frontier: cheaper and faster." },
-    { "id": "catchup_cdf", "type": "cdf", "title": "Time to reach the baseline endpoint", "y": "catchup_min", "group": "condition", "facet": "task",
-      "explain": "Fraction of arms that have reached the baseline's final median by minute x. Arms that never do stay below 1." },
-    { "id": "heat", "type": "heatmap", "title": "Median final latency, normalised to row best", "value": "final_latency_us", "rows": "task", "cols": "condition", "agg": "median", "normalize": "row_best",
-      "explain": "1.00 = best condition for that task; 1.20 = 20% slower than the best." },
-    { "id": "evals_box", "type": "box", "title": "Evaluations per arm", "y": "n_evals", "group": "condition", "facet": "task",
-      "explain": "Does communication change how much agents evaluate, not just what they find?" },
-    { "id": "table", "type": "table", "title": "Summary table", "values": ["final_latency_us", "first_ok_min", "n_evals", "tokens_total_m", "cost_usd"], "rows": "task", "cols": "condition", "agg": "median",
-      "explain": "Medians over seeds; n in parentheses." }
+    {
+      "id": "curve_time",
+      "tab": "overview",
+      "type": "curve",
+      "title": "Best-so-far latency vs wall-clock",
+      "y": "latency_us",
+      "x": "minutes",
+      "group": "condition",
+      "facet": "task",
+      "agg": "median_iqr",
+      "ref": "baseline_final",
+      "explain": "Median over seeds of each team's best verified latency; band = IQR (≥3 seeds). Dashed = baseline final median. Lower is better."
+    },
+    {
+      "id": "curve_evals",
+      "type": "curve",
+      "title": "Best-so-far latency vs # evaluations",
+      "y": "latency_us",
+      "x": "evals",
+      "group": "condition",
+      "facet": "task",
+      "agg": "median_iqr",
+      "explain": "Same curves on an evaluation-count axis: separates 'smarter per eval' from 'more evals per minute'."
+    },
+    {
+      "id": "curve_tokens",
+      "type": "curve",
+      "title": "Best-so-far latency vs cumulative tokens",
+      "y": "latency_us",
+      "x": "tokens_m",
+      "group": "condition",
+      "facet": "task",
+      "agg": "median_iqr",
+      "explain": "Token-efficiency view (H3). A curve that sits left of another reached the same quality for fewer tokens."
+    },
+    {
+      "id": "final_bar",
+      "tab": "overview",
+      "type": "bar",
+      "title": "Final latency by condition",
+      "y": "final_latency_us",
+      "group": "condition",
+      "facet": "task",
+      "agg": "median_iqr",
+      "ref": "baseline",
+      "explain": "Bar = median over seeds, whisker = min–max, dots = arms. Provisional (best-so-far) for unfinished arms."
+    },
+    {
+      "id": "cost_scatter",
+      "type": "scatter",
+      "title": "Cost vs final latency",
+      "x": "cost_usd",
+      "y": "final_latency_us",
+      "color": "condition",
+      "facet": "task",
+      "explain": "One dot per arm. Bottom-left is the frontier: cheaper and faster."
+    },
+    {
+      "id": "catchup_cdf",
+      "type": "cdf",
+      "title": "Time to reach the baseline endpoint",
+      "y": "catchup_min",
+      "group": "condition",
+      "facet": "task",
+      "explain": "Fraction of arms that have reached the baseline's final median by minute x. Arms that never do stay below 1."
+    },
+    {
+      "id": "heat",
+      "type": "heatmap",
+      "title": "Median final latency, normalised to row best",
+      "value": "final_latency_us",
+      "rows": "task",
+      "cols": "condition",
+      "agg": "median",
+      "normalize": "row_best",
+      "explain": "1.00 = best condition for that task; 1.20 = 20% slower than the best."
+    },
+    {
+      "id": "evals_box",
+      "type": "box",
+      "title": "Evaluations per arm",
+      "y": "n_evals",
+      "group": "condition",
+      "facet": "task",
+      "explain": "Does communication change how much agents evaluate, not just what they find?"
+    },
+    {
+      "id": "table",
+      "type": "table",
+      "title": "Summary table",
+      "values": [
+        "final_latency_us",
+        "first_ok_min",
+        "n_evals",
+        "tokens_total_m",
+        "cost_usd"
+      ],
+      "rows": "task",
+      "cols": "condition",
+      "agg": "median",
+      "explain": "Medians over seeds; n in parentheses."
+    }
   ],
-
   "gates": [
-    { "name": "G1 · lessons < none, pooled paired Wilcoxon, effect ≥ 0.05", "status": "pending", "detail": "" },
-    { "name": "G2 · inverted-U shape (Holm-corrected)", "status": "pending", "detail": "" },
-    { "name": "G3 · code tokens ≤ 0.8 × none", "status": "pending", "detail": "" }
+    {
+      "id": "G1",
+      "name": "G1 · lessons < none, paired Wilcoxon over (task, seed), effect ≥ 0.05",
+      "status": "pending",
+      "test": {
+        "kind": "paired_wilcoxon",
+        "scalar": "final_latency_us",
+        "a": {
+          "condition": "lessons"
+        },
+        "b": {
+          "condition": "baseline"
+        },
+        "pair_by": [
+          "task",
+          "seed"
+        ],
+        "alpha": 0.05,
+        "min_effect": 0.05
+      }
+    },
+    {
+      "id": "G2",
+      "name": "G2 · code < none, paired Wilcoxon over (task, seed)",
+      "status": "pending",
+      "test": {
+        "kind": "paired_wilcoxon",
+        "scalar": "final_latency_us",
+        "a": {
+          "condition": "code"
+        },
+        "b": {
+          "condition": "baseline"
+        },
+        "pair_by": [
+          "task",
+          "seed"
+        ],
+        "alpha": 0.05,
+        "min_effect": 0.0
+      }
+    },
+    {
+      "id": "G3",
+      "name": "G3 · code tokens ≤ 0.8 × none (Mann-Whitney)",
+      "status": "pending",
+      "test": {
+        "kind": "mann_whitney",
+        "scalar": "tokens_total_m",
+        "a": {
+          "condition": "code"
+        },
+        "b": {
+          "condition": "baseline"
+        },
+        "alpha": 0.05,
+        "min_effect": 0.2
+      }
+    }
   ],
-  "links": [ { "label": "plan.md", "url": "#" }, { "label": "results notebook", "url": "#" } ],
+  "links": [
+    {
+      "label": "plan.md",
+      "url": "#"
+    },
+    {
+      "label": "results notebook",
+      "url": "#"
+    }
+  ],
   "notes": ""
 }

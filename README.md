@@ -22,9 +22,16 @@ but the data model is generic: anything that produces records over time fits.
 | **Explore** | combine any metric × x-axis × group × facet × aggregation on the fly; the view is encoded in the URL hash |
 | **Ops** | GPU / core occupancy, disk, load, anchor drift, incidents, silent arms with their data paths, log, collector info |
 
-Time estimates update on every refresh: running arms end at `start + budget`, queued arms are packed onto
-`concurrency` slots, manual phases use their planned duration, and durations are learned from finished arms
-when no budget is declared. Estimates are italic; observations upright; provisional numbers are starred.
+Time estimates update on every refresh: running arms end at `start + budget` or are extrapolated from their
+progress rate, queued arms are packed onto `concurrency` slots no earlier than their phase's dependencies finish,
+manual phases use their planned duration, durations are learned from finished arms, and the plan's `est_min` is the
+fallback prior. Unknown stays *unknown*; late work turns orange (*overdue*). Estimates are italic; observations
+upright; provisional numbers (unfinished **or auto-closed** arms) are starred.
+
+Pre-registered gates can carry a declarative test (`paired_wilcoxon`, `mann_whitney`, `welch_t`); the collector
+computes p-value, effect and n on every tick and shows a provisional verdict until every compared arm has finished.
+The collector also emits an automatic event feed (arm started / finished / failed / silent / auto-closed, phase
+started / finished) and flags N arms going silent in the same minute.
 
 <p align="center"><img src="docs/progress.png" width="880" alt="progress tab"></p>
 <p align="center"><img src="docs/results.png" width="880" alt="results tab"></p>
@@ -36,6 +43,7 @@ git clone https://github.com/xuanfeiren/exp-dashboard.git
 cd exp-dashboard
 scripts/smoke_test.sh /tmp/expdash-smoke 8399 60     # simulate → collect → serve → screenshot every tab
 open http://localhost:8399                            # or look at /tmp/expdash-smoke/shot_*.png
+scripts/scenarios.sh                                  # regression: csv without timestamps, result-file-only sweep, hostile plan
 ```
 
 ## Using it as an agent skill
@@ -71,12 +79,15 @@ plan.json, state.json     (every 30 s)         serve.sh / hub-serve.sh      (ref
    rolls up phases, flags mass silence (N arms dying in the same minute = credentials / host), merges
    the hand-written `state.json`, and writes `live.json` atomically. `--check` proves it can see data
    before you trust it.
-3. **Adapters** (`adapters/`) are the only experiment-specific code: `collect_arm(arm, plan, ctx) →
+3. **`collector.py --lint`** validates every id reference in the plan (plots ↔ metrics / scalars / x-axes /
+   factors, arms ↔ phases, `depends_on` cycles, gate tests) before anything runs; `--check` runs the lint plus one
+   collection tick and refuses to proceed when no arm has readable data.
+4. **Adapters** (`adapters/`) are the only experiment-specific code: `collect_arm(arm, plan, ctx) →
    {records, scalars, status, start, end, progress, note, src}`. Bundled: JSON-lines events, CSV
    rows, regex over log files, multi-lane teams.
-4. **`dashboard.html`** is one file, vanilla JS + inline SVG, no CDN, no build. It works from
+5. **`dashboard.html`** is one file, vanilla JS + inline SVG, no CDN, no build. It works from
    `python3 -m http.server` on an air-gapped box and can be frozen into a single snapshot.
-5. **`logline.py`** is how the agent narrates: `log`, `now_doing`, `phase <id> running|done`,
+6. **`logline.py`** is how the agent narrates: `log`, `now_doing`, `phase <id> running|done`,
    `gate <name> pass|fail`, `hypothesis <id> supported|refuted`, `incident warn|error`.
 
 Schemas: [`reference/live-schema.md`](reference/live-schema.md), [`reference/plot-spec.md`](reference/plot-spec.md).
@@ -96,7 +107,8 @@ Schemas: [`reference/live-schema.md`](reference/live-schema.md), [`reference/plo
 
 Distilled from months of multi-day agent campaigns (details in [`reference/ops-lessons.md`](reference/ops-lessons.md)):
 
-- a monitor must prove it sees data before anyone trusts it (`--check`, printed `src`);
+- a monitor must prove it sees data before anyone trusts it (`--lint`, `--check`, printed `src`);
+- a crashed arm is not a finished arm: budget elapsed without a status file → *auto-closed*, starred, excluded from medians;
 - live data often lives somewhere else than final data (scratch dirs wiped on reboot) — adapters read both;
 - show heartbeat age in red when stale; flag silent arms; flag N arms going silent in the same minute;
 - orchestration and collection live on the data host; the laptop only pulls and displays;
@@ -107,9 +119,9 @@ Distilled from months of multi-day agent campaigns (details in [`reference/ops-l
 
 ```
 SKILL.md                 agent instructions (the skill)
-templates/               plan.example.json · collector.py · dashboard.html · serve.sh · hub.html · hub-serve.sh
+templates/               plan.minimal.json · plan.example.json · collector.py · dashboard.html · serve.sh · hub.html · hub-serve.sh
 adapters/                jsonl_events.py · csv_rows.py · log_regex.py · multi_lane.py
-scripts/                 simulate.py · smoke_test.sh · logline.py · snapshot.py
+scripts/                 simulate.py · smoke_test.sh · gen_scenarios.py · scenarios.sh · logline.py · snapshot.py
 reference/               live-schema.md · plot-spec.md · ops-lessons.md · design-guide.md
 docs/                    screenshots
 ```

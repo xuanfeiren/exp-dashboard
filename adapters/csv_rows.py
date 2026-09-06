@@ -2,18 +2,33 @@
 
 Layout: <runs>/<arm_id>.csv  or  <runs>/<arm_id>/metrics.csv   with a header row.
 Options (--adapter-arg):
-    time_col=t          column holding epoch seconds (default "t"; if absent, file mtime is used for the last row
-                        and the `minutes` axis is unavailable — use x_axes "step" instead)
-    step_col=step       column holding the iteration index
-    ok_col=             column whose truthiness marks a verified/valid row (default: all rows ok)
-    done_marker=DONE    a file <runs>/<arm_id>/DONE (or <arm_id>.DONE) marks the arm finished
+    time_col=t          column holding epoch seconds. STRONGLY RECOMMENDED. Without it, timestamps are
+                        synthesised by spreading rows evenly between the file's creation time and its mtime
+                        (good enough for silence detection and rough wall-clock curves; use x_axes "step" for real curves).
+                        A `<runs>/<arm>.started` (or <arm>/started) marker file sets the launch time precisely.
+    step_col=step       column holding the iteration index (→ `step` x-axis and progress % when arm.total_steps is set)
+    ok_col=             column whose truthiness marks a valid row (default: all rows ok)
+    done_marker=DONE    <runs>/<arm_id>/DONE or <runs>/<arm_id>.DONE marks the arm finished. Have your runner touch it —
+                        otherwise a finished run looks "silent" after silent_after_min.
 """
 import csv, os
 
 
 def _num(s):
-    try: return float(s)
+    try:
+        v = float(s); return v if v == v and abs(v) != float("inf") else None
     except (TypeError, ValueError): return None
+
+
+def _birth(path):
+    st = os.stat(path); return min(getattr(st, "st_birthtime", None) or st.st_ctime, st.st_mtime)
+
+
+def _started(runs, arm_id):
+    """<runs>/<arm_id>/started or <runs>/<arm_id>.started: an empty file whose mtime is the launch time (write it from your runner)."""
+    for p in (os.path.join(runs, arm_id, "started"), os.path.join(runs, arm_id + ".started")):
+        if os.path.exists(p): return os.path.getmtime(p)
+    return None
 
 
 def collect_arm(arm, plan, ctx):
@@ -25,18 +40,23 @@ def collect_arm(arm, plan, ctx):
     try:
         with open(path, newline="") as f:
             for row in csv.DictReader(f):
-                rec = {k: (_num(v) if _num(v) is not None else v) for k, v in row.items() if k}
-                if tcol in rec and isinstance(rec[tcol], float): rec["t"] = rec.pop(tcol)
-                if scol in rec and isinstance(rec[scol], float): rec["step"] = int(rec.pop(scol))
+                rec = {}
+                for k, v in row.items():
+                    if not k: continue
+                    n = _num(v); rec[k] = n if n is not None else v
+                if isinstance(rec.get(tcol), float): rec["t"] = rec.pop(tcol)
+                if isinstance(rec.get(scol), float): rec["step"] = int(rec.pop(scol))
                 if okcol: rec["ok"] = str(row.get(okcol, "1")).strip().lower() not in ("0", "false", "no", "")
                 records.append(rec)
     except OSError:
         pass
-    if records and "t" not in records[-1] and os.path.exists(path):
-        records[-1]["t"] = os.path.getmtime(path)  # at least make last_event meaningful for silence detection
+    start = None
+    if records and os.path.exists(path) and not all(isinstance(r.get("t"), float) for r in records):
+        t0, t1 = _started(runs, arm["id"]) or _birth(path), os.path.getmtime(path); n = len(records)
+        for i, r in enumerate(records): r.setdefault("t", t0 + (t1 - t0) * (i / (n - 1) if n > 1 else 1.0))
+        start = t0
     marker = o.get("done_marker", "DONE")
     done = os.path.exists(os.path.join(runs, arm["id"], marker)) or os.path.exists(os.path.join(runs, arm["id"] + "." + marker))
     total = arm.get("total_steps")
     prog = {"step": records[-1]["step"], "total": total} if (records and total and "step" in records[-1]) else None
-    return {"records": records, "scalars": {}, "status": "done" if done else None, "start": None, "end": None,
-            "progress": prog, "note": None, "src": path}
+    return {"records": records, "scalars": {}, "status": "done" if done else None, "start": start or _started(runs, arm["id"]), "end": None, "progress": prog, "note": None, "src": path}

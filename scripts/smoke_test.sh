@@ -19,7 +19,7 @@ cp "$HERE/templates/dashboard.html" "$WORK/site/index.html"
 ( cd "$WORK/site" && exec python3 -m http.server "$PORT" --bind 127.0.0.1 ) > "$WORK/http.log" 2>&1 &
 echo "== dashboard: http://localhost:$PORT  (waiting ${WAIT}s so done/running/silent/queued arms coexist) =="
 sleep "$WAIT"
-python3 "$HERE/scripts/logline.py" "$WORK/state.json" gate "G1 · lessons < none, pooled paired Wilcoxon, effect ≥ 0.05" pass "p=0.004 (demo)" > /dev/null
+python3 "$HERE/scripts/logline.py" "$WORK/state.json" gate G1 pass "manual verdict example (demo)" > /dev/null
 python3 "$HERE/scripts/logline.py" "$WORK/state.json" hypothesis H1 supported "both channels below baseline on taskA (demo)" > /dev/null
 sleep 4
 python3 - "$WORK/site/live.json" <<'EOF'

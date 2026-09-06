@@ -1,0 +1,30 @@
+{
+  "schema": "expdash/2",
+  "name": "lr-sweep",
+  "title": "Learning-rate sweep",
+  "subtitle": "4 learning rates × 2 seeds · higher accuracy is better",
+  "lang": "en",
+  "description": "# Goal\nPick the learning rate with the best validation accuracy after 3000 steps.\n\n# Design\n4 learning rates × 2 seeds, one training run per arm; accuracy is logged every 100 steps to metrics.csv.",
+  "factors": [
+    { "id": "lr",   "label": "learning rate", "levels": [ "1e-4", "3e-4", "1e-3", "3e-3" ] },
+    { "id": "seed", "label": "seed",          "levels": [ "1", "2" ] }
+  ],
+  "arm_defaults": { "total_steps": 3000 },
+  "concurrency": 4,
+  "silent_after_min": 15,
+  "phases": [ { "id": "train", "name": "Training", "kind": "arms", "est_min": 90, "purpose": "Train all 8 runs.", "criteria": "every run reaches 3000 steps" } ],
+  "metrics": [ { "id": "val_acc", "label": "validation accuracy", "unit": "%", "lower_is_better": false, "curve": "raw" } ],
+  "x_axes":  [ { "id": "step", "label": "step" }, { "id": "minutes", "label": "wall-clock (min)" } ],
+  "scalars": [
+    { "id": "final_acc", "label": "final accuracy", "unit": "%", "derive": { "metric": "val_acc", "how": "last" } },
+    { "id": "best_acc",  "label": "best accuracy",  "unit": "%", "derive": { "metric": "val_acc", "how": "best" } }
+  ],
+  "plots": [
+    { "id": "acc_step",  "tab": "overview", "type": "curve", "title": "Validation accuracy vs step", "y": "val_acc", "x": "step", "group": "lr", "agg": "median_iqr",
+      "explain": "Median over seeds; band = IQR once ≥3 seeds exist. Higher is better." },
+    { "id": "final_bar", "tab": "overview", "type": "bar", "title": "Final accuracy by learning rate", "y": "final_acc", "group": "lr", "agg": "median",
+      "explain": "Bar = median over seeds, dots = runs; starred while a run is still training." }
+  ],
+  "gates": [ { "id": "G1", "name": "G1 · best lr beats 1e-4 by ≥ 1 point (Welch t)", "status": "pending",
+               "test": { "kind": "welch_t", "scalar": "final_acc", "a": { "lr": "1e-3" }, "b": { "lr": "1e-4" }, "alpha": 0.05, "min_effect": 0.01 } } ]
+}

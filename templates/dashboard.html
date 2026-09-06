@@ -7,7 +7,7 @@
 <style>
 /* ---------- tokens: light/dark automatic ---------- */
 .viz-root{color-scheme:light;--page:#f7f7f5;--surface:#fcfcfb;--surface-2:#f0efec;--ink:#0b0b0b;--ink-2:#4f4e4a;--muted:#8a8880;--grid:#e2e1db;
-  --border:rgba(11,11,11,.10);--good:#0f9d58;--warn:#c98a00;--bad:#d93f3f;--run:#2a78d6;--silent:#c2187a;--accent:#2a78d6}
+  --border:rgba(11,11,11,.10);--good:#0f9d58;--warn:#b7791f;--bad:#d93f3f;--run:#2a78d6;--silent:#c2187a;--accent:#2a78d6}
 @media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])) .viz-root{color-scheme:dark;--page:#0e0e0d;--surface:#191918;--surface-2:#23231f;
   --ink:#f4f4f1;--ink-2:#bdbcb3;--muted:#85837b;--grid:#2e2e2a;--border:rgba(255,255,255,.10);--good:#3cb371;--warn:#e0a020;--bad:#e05b5b}}
 *{box-sizing:border-box}
@@ -19,33 +19,38 @@ h1{font-size:20px;font-weight:650;margin:0;letter-spacing:-.01em} h2{font-size:1
 .badge{font-size:12px;padding:3px 10px;border-radius:999px;border:1px solid var(--border);color:var(--ink-2);white-space:nowrap}
 .badge.fresh{border-color:var(--good);color:var(--good)} .badge.stale{background:var(--bad);color:#fff;border-color:var(--bad);font-weight:650}
 .banner{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:10px 14px;margin:14px 0 10px}
-.banner .now{font-size:13.5px} .banner .now b{font-weight:650}
-.strip{display:flex;gap:3px;margin-top:8px;height:14px} .strip .seg{position:relative;background:var(--surface-2);border-radius:4px;overflow:hidden;min-width:24px;cursor:pointer}
-.strip .seg .fill{position:absolute;left:0;top:0;bottom:0;background:var(--good);opacity:.85} .strip .seg.running .fill{background:var(--run)}
-.strip .seg.running{outline:2px solid var(--run);outline-offset:1px} .strip .seg .lbl{position:absolute;inset:0;font-size:9.5px;line-height:14px;text-align:center;color:var(--ink);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
-.strip .seg.done .lbl{color:#fff}
+.banner .now{font-size:13.5px} .banner .now b{font-weight:650} .banner .age{color:var(--muted);font-size:11.5px;margin-left:8px} .banner .age.old{color:var(--warn)}
+.strip{display:flex;gap:3px;margin-top:8px;height:16px}
+.strip .seg{position:relative;background:var(--surface-2);border-radius:4px;overflow:hidden;min-width:28px;cursor:pointer;border:1px solid var(--border)}
+.strip .seg .fill{position:absolute;left:0;top:0;bottom:0;background:var(--good);opacity:.8} .strip .seg.running .fill{background:var(--run);opacity:.3}
+.strip .seg.running{border-color:var(--run)} .strip .seg.overdue{border-color:var(--warn)}
+.strip .seg .lbl{position:absolute;inset:0;font-size:10px;line-height:14px;text-align:center;color:var(--ink);pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.strip .seg.done .lbl{color:#fff;font-weight:600}
 .tabs{display:flex;gap:2px;border-bottom:1px solid var(--grid);margin:8px 0 14px;flex-wrap:wrap}
 .tab{padding:8px 14px 9px;font-size:13px;color:var(--ink-2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;display:flex;gap:6px;align-items:center}
 .tab:hover{color:var(--ink)} .tab.on{color:var(--ink);font-weight:650;border-bottom-color:var(--accent)}
 .tab .n{font-size:10.5px;background:var(--surface-2);border-radius:999px;padding:0 6px;color:var(--ink-2)}
 section{display:none} section.on{display:block}
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
-.tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px} .tile .k{font-size:11.5px;color:var(--muted)}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;position:relative} .tile .k{font-size:11.5px;color:var(--muted)}
 .tile .v{font-size:24px;font-weight:650;letter-spacing:-.01em;line-height:1.2;margin-top:2px} .tile .v.small{font-size:15px;margin-top:6px} .tile .h{font-size:11px;color:var(--muted);margin-top:2px}
+.tile svg.spark{position:absolute;right:10px;bottom:8px;width:70px;height:22px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin:10px 0}
 .card.clickable{cursor:pointer} .card.clickable:hover{border-color:var(--accent)}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:10px} .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
 .explain{color:var(--ink-2);font-size:12px;line-height:1.55;margin-top:6px;border-top:1px solid var(--grid);padding-top:6px}
+.scroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:12.5px} th,td{text-align:left;padding:5px 8px;border-top:1px solid var(--grid);vertical-align:top}
-th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-top:none;cursor:pointer;user-select:none} th.sorted{color:var(--ink)}
+th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.04em;border-top:none;user-select:none} th.sortable{cursor:pointer} th.sorted{color:var(--ink)}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums} tr.row{cursor:pointer} tr.row:hover td{background:var(--surface-2)}
-.est{font-style:italic;color:var(--muted)}
+.est{font-style:italic;color:var(--muted)} .overdue{color:var(--warn);font-weight:650}
 .chip{display:inline-block;padding:1px 8px;border-radius:6px;font-size:11px;border:1px solid var(--border);line-height:1.5;white-space:nowrap}
 .chip.done,.chip.pass,.chip.supported{background:#0f9d5822;color:var(--good)} .chip.running{background:#2a78d622;color:var(--run)} .chip.queued,.chip.pending{color:var(--muted)}
 .chip.failed,.chip.killed,.chip.fail,.chip.refuted{background:#d93f3f22;color:var(--bad)} .chip.silent{background:#c2187a22;color:var(--silent);font-weight:650}
-.chip.warn,.chip.inconclusive{background:#fab21933;color:var(--warn)}
+.chip.warn,.chip.inconclusive,.chip.auto{background:#b7791f22;color:var(--warn)} .chip.auto{border-style:dashed}
 .seed{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:22px;padding:0 6px;border-radius:6px;font-size:11px;font-weight:650;margin:2px;border:1px solid var(--border);color:var(--muted);background:var(--surface-2);cursor:pointer}
 .seed.running{background:var(--run);color:#fff;border-color:var(--run);animation:pulse 1.8s infinite} .seed.done{background:#0f9d5822;color:var(--good);border-color:#0f9d5855}
+.seed.done.auto{background:transparent;color:var(--warn);border:1px dashed var(--warn)}
 .seed.failed,.seed.killed{background:var(--bad);color:#fff} .seed.silent{background:var(--silent);color:#fff;border-color:var(--silent)}
 @keyframes pulse{50%{opacity:.55}}
 .legend{display:flex;gap:12px;flex-wrap:wrap;margin:2px 0 4px} .legend .item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);cursor:pointer;user-select:none}
@@ -53,6 +58,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums} tr.row{cursor:
 .plots{display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:12px} .plot{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px 8px}
 .plot h3{cursor:pointer} .plot h3:hover{color:var(--accent)} .plot .csub{font-size:11.5px;color:var(--muted);margin:1px 0 4px}
 .panels{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))} .panel h4{font-size:11.5px;font-weight:650;margin:0 0 2px;color:var(--ink-2)}
+.panel svg{display:block;margin:0 auto} .panel .note{font-size:10.5px;color:var(--muted)}
 svg text{fill:var(--ink-2);font-size:10.5px} svg .axis{stroke:var(--grid)}
 .controls{display:flex;gap:12px;align-items:center;font-size:12px;color:var(--ink-2);flex-wrap:wrap;margin-bottom:8px}
 .controls label{display:flex;gap:5px;align-items:center} .controls select,.controls input[type=text]{font:inherit;font-size:12px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--ink)}
@@ -61,18 +67,20 @@ svg text{fill:var(--ink-2);font-size:10.5px} svg .axis{stroke:var(--grid)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:20;align-items:flex-start;justify-content:center;padding:40px 20px;overflow:auto}
 .modal.on{display:flex} .modal .box{background:var(--surface);border-radius:14px;padding:18px 22px;max-width:1200px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.35);position:relative}
 .modal .x{position:absolute;right:14px;top:10px;border:none;background:none;font-size:20px;cursor:pointer;color:var(--muted)}
-.md h3{font-size:15px;margin:10px 0 4px} .md h4{font-size:13.5px;margin:8px 0 2px} .md p{margin:4px 0 8px;color:var(--ink-2)} .md ul{margin:2px 0 8px 18px;color:var(--ink-2)} .md code{font:11.5px ui-monospace,Menlo,monospace;background:var(--surface-2);padding:1px 4px;border-radius:4px}
-.md b{color:var(--ink)}
+.md h3{font-size:15px;margin:10px 0 4px} .md h4{font-size:13.5px;margin:8px 0 2px} .md p{margin:4px 0 8px;color:var(--ink-2)} .md ul{margin:2px 0 8px 18px;color:var(--ink-2)}
+.md code{font:11.5px ui-monospace,Menlo,monospace;background:var(--surface-2);padding:1px 4px;border-radius:4px} .md b{color:var(--ink)}
 .coremap{display:grid;grid-template-columns:repeat(16,1fr);gap:3px} .cell{height:24px;border-radius:5px;font-size:9.5px;display:flex;align-items:center;justify-content:center;color:#fff;border:1px solid var(--border);overflow:hidden}
 .gpus{display:flex;gap:4px;flex-wrap:wrap} .gpu{width:56px;height:40px;border-radius:6px;background:var(--surface-2);position:relative;overflow:hidden;border:1px solid var(--border)}
 .gpu .fill{position:absolute;left:0;right:0;bottom:0;background:var(--run)} .gpu span{position:absolute;top:2px;left:0;right:0;text-align:center;font-size:10px;color:var(--ink-2)}
 pre.log{margin:0;font:11.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;color:var(--ink-2);max-height:420px;overflow:auto}
+pre.log .auto{color:var(--muted)}
 .inc{padding:6px 10px;border-left:3px solid var(--warn);background:var(--surface-2);border-radius:6px;margin:4px 0;font-size:12.5px} .inc.error{border-left-color:var(--bad)} .inc time{color:var(--muted);font-size:11px;margin-right:8px}
 .swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.phasecard .body{display:none;margin-top:8px} .phasecard.open .body{display:block}
+.phasecard .body{display:none;margin-top:8px} .phasecard.open .body{display:block} .phasecard .peek{color:var(--ink-2);font-size:12.5px;margin-top:4px}
 .kv{display:grid;grid-template-columns:130px 1fr;gap:2px 10px;font-size:12.5px} .kv .k{color:var(--muted)}
 .best{color:var(--good);font-weight:650} .second{color:#6cbf8a;font-weight:600}
 .small{font-size:11.5px;color:var(--muted)} .prog{height:6px;background:var(--surface-2);border-radius:3px;overflow:hidden;margin-top:4px} .prog i{display:block;height:100%;background:var(--run)}
+.warnbox{background:#b7791f18;border:1px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:12.5px;margin:8px 0}
 footer{color:var(--muted);font-size:11px;margin-top:20px}
 a{color:var(--accent)}
 </style>
@@ -98,45 +106,63 @@ const REFRESH_MS = 25000;
 // ==========================================================================================================
 const L = {
  en: { tabs: { overview: "Overview", plan: "Plan", progress: "Progress", results: "Results", explore: "Explore", ops: "Ops" },
-       t_done: "arms done", t_run: "running", t_queued: "queued", t_bad: "failed / silent", t_phase: "current phase", t_eta: "ETA (all phases)", t_evals: "records", t_cost: "cost",
-       done: "done", running: "running", queued: "queued", failed: "failed", silent: "silent", killed: "killed", pass: "pass", fail: "fail", pending: "pending", warn: "warn",
-       supported: "supported", refuted: "refuted", inconclusive: "inconclusive", left: "remaining", ago: "ago", updated: "collector heartbeat", stale: "STALE", snapshot: "snapshot",
-       phase: "phase", start: "start", end: "end", dur: "duration", status: "status", arms: "arms", est_note: "italic = estimate (queue simulated over concurrency slots; manual phases use their planned duration); upright = observed",
+       t_done: "arms done", t_run: "running", t_queued: "queued", t_bad: "needs attention", t_phase: "current phase", t_eta: "ETA (all phases)", t_evals: "records", t_cost: "cost",
+       done: "done", running: "running", queued: "queued", failed: "failed", silent: "silent", killed: "killed", auto: "auto-closed", pass: "pass", fail: "fail", pending: "pending", warn: "warn",
+       supported: "supported", refuted: "refuted", inconclusive: "inconclusive", left: "remaining", ago: "ago", updated: "collector heartbeat", stale: "STALE", snapshot: "snapshot", set: "set",
+       overdue: "overdue", unknown: "unknown", phase: "phase", start: "start", end: "end", dur: "duration", planned: "planned", projected: "projected", status: "status", arms: "arms",
+       est_note: "Italic = estimate (running arms: budget or progress rate; queued arms packed onto concurrency slots after their phase's dependencies; manual phases: planned duration). Upright = observed. Orange = overdue.",
        hypotheses: "Hypotheses", gates: "Pre-registered gates", design: "Design", factors_note: "arms = product of factor levels", phases: "Phases", measures: "What is measured", links: "Links",
-       metric: "metric", xaxis: "x-axis", scalar: "per-arm scalar", purpose: "purpose", method: "method", criteria: "criteria", outputs: "outputs", depends: "after", planned: "planned",
-       gantt: "Timeline", matrix: "Arm matrix", rows: "rows", cols: "columns", armtable: "All arms", filter: "show", all: "all", where: "Where we are",
-       headline: "Headline plots", recent: "Recent log", incidents: "Incidents", none: "(none)", waiting: "waiting for data…",
-       type: "chart", y: "y", x: "x", group: "group by", facet: "facet by", agg: "aggregate", logy: "log y", logx: "log x", explore_note: "Every metric, x-axis and per-arm scalar declared in the plan can be combined here. The URL hash holds the current view — copy it to share.",
+       metric: "metric", xaxis: "x-axis", scalar: "per-arm scalar", purpose: "purpose", method: "method", criteria: "criteria", outputs: "outputs", depends: "after",
+       gantt: "Timeline", matrix: "Arm matrix", rows: "rows", cols: "columns", none_: "—", armtable: "All arms", filter: "show", search: "search", all: "all",
+       headline: "Headline plots", recent: "Recent log", incidents: "Incidents", none: "(none)", waiting: "waiting for data…", spec_err: "plot spec error",
+       type: "chart", y: "y", x: "x", group: "group by", facet: "facet by", agg: "aggregate", logy: "log y", logx: "log x",
+       explore_note: "Every metric, x-axis and per-arm scalar declared in the plan can be combined here. The URL hash holds the current view — copy it to share.",
        resources: "Resources", anchors: "Anchors (session drift)", log: "Log", collector: "Collector", silent_arms: "Silent arms", disk: "disk free", load: "load", core: "core",
-       provisional: "* provisional: best-so-far of an unfinished arm", n: "n", never: "never", catch: "reached at", detail: "Arm detail", records: "last records", src: "source", enlarge: "click title to enlarge",
-       median_iqr: "median ± IQR", mean_sd: "mean ± sd", lanes: "individual arms", median: "median", mean: "mean", value: "value", ref: "baseline" },
+       provisional: "* provisional: best-so-far of an unfinished or auto-closed arm", n: "n", never: "never", detail: "Arm detail", records: "last records", src: "source",
+       enlarge: "click title to enlarge", median_iqr: "median ± IQR", mean_sd: "mean ± sd", lanes: "individual arms", median: "median", mean: "mean", ref: "baseline",
+       lognote: "log scale hides {n} non-positive point(s)", linear_fallback: "all values ≤ 0 — drawn on a linear scale", plan_warn: "plan warnings", adapter_err: "adapter errors",
+       curve_best: "best so far", curve_raw: "raw", curve_cumsum: "cumulative", kind_arms: "arms", kind_manual: "manual step", eta_hist: "ETA drift", effect: "effect", pairs: "pairs" },
  zh: { tabs: { overview: "总览", plan: "计划", progress: "进度", results: "结果", explore: "探索", ops: "运行" },
-       t_done: "臂 完成", t_run: "运行中", t_queued: "排队", t_bad: "失败 / 静默", t_phase: "当前阶段", t_eta: "预计全部完成", t_evals: "记录数", t_cost: "累计成本",
-       done: "已完成", running: "运行中", queued: "排队", failed: "失败", silent: "静默", killed: "已杀", pass: "通过", fail: "未过", pending: "待定", warn: "警告",
-       supported: "支持", refuted: "否定", inconclusive: "不确定", left: "剩余", ago: "前", updated: "collector 心跳", stale: "数据过期", snapshot: "静态快照",
-       phase: "阶段", start: "开始", end: "结束", dur: "时长", status: "状态", arms: "臂", est_note: "斜体 = 预估（按并发槽位模拟排队；手动阶段用计划时长）；正体 = 已观测",
+       t_done: "臂 完成", t_run: "运行中", t_queued: "排队", t_bad: "需要关注", t_phase: "当前阶段", t_eta: "预计全部完成", t_evals: "记录数", t_cost: "累计成本",
+       done: "已完成", running: "运行中", queued: "排队", failed: "失败", silent: "静默", killed: "已杀", auto: "自动关闭", pass: "通过", fail: "未过", pending: "待定", warn: "警告",
+       supported: "支持", refuted: "否定", inconclusive: "不确定", left: "剩余", ago: "前", updated: "collector 心跳", stale: "数据过期", snapshot: "静态快照", set: "写于",
+       overdue: "超时", unknown: "未知", phase: "阶段", start: "开始", end: "结束", dur: "时长", planned: "计划", projected: "预估", status: "状态", arms: "臂",
+       est_note: "斜体 = 预估（运行中的臂按预算或进度速率；排队臂在其阶段的前置完成后按并发槽位排队；手动阶段用计划时长）；正体 = 已观测；橙色 = 超时。",
        hypotheses: "假设", gates: "预注册判据", design: "设计", factors_note: "臂 = 各因子水平的笛卡尔积", phases: "阶段", measures: "测什么", links: "链接",
-       metric: "指标", xaxis: "横轴", scalar: "每臂标量", purpose: "目的", method: "做法", criteria: "判据", outputs: "产出", depends: "前置", planned: "计划",
-       gantt: "时间线", matrix: "臂矩阵", rows: "行", cols: "列", armtable: "全部臂", filter: "只看", all: "全部", where: "现在做到哪了",
-       headline: "重点图", recent: "最近日志", incidents: "事件 / 事故", none: "（无）", waiting: "等待数据…",
-       type: "图型", y: "纵轴", x: "横轴", group: "分组", facet: "分面", agg: "聚合", logy: "log y", logx: "log x", explore_note: "计划里声明的任何指标、横轴、每臂标量都能在这里任意组合。当前视图写在 URL hash 里，复制即可分享。",
+       metric: "指标", xaxis: "横轴", scalar: "每臂标量", purpose: "目的", method: "做法", criteria: "判据", outputs: "产出", depends: "前置",
+       gantt: "时间线", matrix: "臂矩阵", rows: "行", cols: "列", none_: "—", armtable: "全部臂", filter: "只看", search: "搜索", all: "全部",
+       headline: "重点图", recent: "最近日志", incidents: "事件 / 事故", none: "（无）", waiting: "等待数据…", spec_err: "图配置错误",
+       type: "图型", y: "纵轴", x: "横轴", group: "分组", facet: "分面", agg: "聚合", logy: "log y", logx: "log x",
+       explore_note: "计划里声明的任何指标、横轴、每臂标量都能在这里任意组合。当前视图写在 URL hash 里，复制即可分享。",
        resources: "资源", anchors: "Anchors（会话漂移）", log: "日志", collector: "Collector", silent_arms: "静默臂", disk: "磁盘剩余", load: "负载", core: "核",
-       provisional: "* 临时值：未完成臂的 best-so-far", n: "n", never: "never", catch: "追平于", detail: "臂详情", records: "最近记录", src: "数据源", enlarge: "点标题放大",
-       median_iqr: "中位 ± IQR", mean_sd: "均值 ± sd", lanes: "每臂单独", median: "中位", mean: "均值", value: "值", ref: "baseline" } };
-const PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#8e5ad6", "#c2187a", "#c9a200", "#0aa5b8", "#7a7a72", "#e07b00", "#4c9e4c"];
+       provisional: "* 临时值：未完成或自动关闭的臂的 best-so-far", n: "n", never: "never", detail: "臂详情", records: "最近记录", src: "数据源",
+       enlarge: "点标题放大", median_iqr: "中位 ± IQR", mean_sd: "均值 ± sd", lanes: "每臂单独", median: "中位", mean: "均值", ref: "baseline",
+       lognote: "log 坐标隐藏了 {n} 个 ≤0 的点", linear_fallback: "全部 ≤ 0，改用线性坐标", plan_warn: "计划警告", adapter_err: "adapter 错误",
+       curve_best: "best so far", curve_raw: "原始", curve_cumsum: "累计", kind_arms: "臂", kind_manual: "手动步骤", eta_hist: "ETA 漂移", effect: "效应", pairs: "配对" } };
+const PALETTE = ["#2a78d6", "#eb6834", "#1baf7a", "#8e5ad6", "#c2187a", "#c9a200", "#0aa5b8", "#7a7a72", "#e07b00", "#4c9e4c", "#b04a8a", "#5b8def"];
+const FINISHED = ["done", "failed", "killed"];
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-let D = null, C = null, T = L.en, TAB = "overview", HIDDEN = {}, SORT = { key: "id", dir: 1 }, FILTER = "all", MATRIX = {}, EXPL = null, OPEN_PHASES = new Set();
+const cls = s => String(s ?? "").replace(/[^a-zA-Z0-9_-]/g, "");
+const safeColor = c => /^(#[0-9a-fA-F]{3,8}|(rgb|hsl)a?\([\d.,\s%]+\)|[a-zA-Z]{3,20})$/.test(String(c || "")) ? c : null;
+const safeUrl = u => /^(https?:|mailto:|#|\/|\.\/|[\w.-]+(\/|$))/.test(String(u || "")) && !/^javascript:/i.test(u) ? u : "#";
+let D = null, C = null, T = L.en, TAB = "overview", HIDDEN = {}, SORT = { key: "id", dir: 1 }, FILTER = "all", SEARCH = "", MATRIX = {}, EXPL = null;
+let OPEN_PHASES = null, LAST_UPDATED = null, LAST_TAB = null, LAST_GOOD = null;
 
 // ---------------------------------------------------------------- formatting & stats
 function fmtNum(v, unit) {
-  if (v == null || v === Infinity || Number.isNaN(v)) return v === Infinity ? "∞" : "—";
+  if (v == null || Number.isNaN(v)) return "—"; if (v === Infinity) return "∞"; if (v === -Infinity) return "-∞";
   if (unit === "µs" || unit === "us") return v >= 1e6 ? (v / 1e6).toFixed(2) + " s" : v >= 1000 ? (v / 1000).toFixed(2) + " ms" : v.toFixed(v < 10 ? 2 : 1) + " µs";
-  const a = Math.abs(v); let s = a >= 1e6 ? v.toExponential(2) : a >= 1000 ? Math.round(v).toLocaleString() : a >= 100 ? v.toFixed(0) : a >= 10 ? v.toFixed(1) : a >= 1 ? v.toFixed(2) : a === 0 ? "0" : v.toPrecision(3);
+  if (unit === "ms") return v >= 1000 ? (v / 1000).toFixed(2) + " s" : v.toFixed(v < 10 ? 2 : 1) + " ms";
+  const a = Math.abs(v); let s;
+  if (Number.isInteger(v) && a < 1e9) s = v.toLocaleString();
+  else if (a >= 1e9) s = v.toExponential(2);
+  else if (a >= 1000) s = Math.round(v).toLocaleString();
+  else if (a >= 100) s = v.toFixed(0); else if (a >= 10) s = String(+v.toFixed(1)); else if (a >= 1) s = String(+v.toFixed(2)); else if (a === 0) s = "0"; else s = String(+v.toPrecision(3));
   if (unit === "$") return "$" + s; if (unit === "%") return s + "%"; return s + (unit ? " " + unit : "");
 }
 const pad2 = n => String(n).padStart(2, "0");
-function fmtT(ts) { if (!ts) return "—"; const t = new Date(ts * 1000), n = new Date(); const same = t.toDateString() === n.toDateString();
+function fmtT(ts) { if (!ts || !isFinite(ts)) return "—"; const t = new Date(ts * 1000), n = new Date(); const same = t.toDateString() === n.toDateString();
   return (same ? "" : (t.getMonth() + 1) + "/" + t.getDate() + " ") + pad2(t.getHours()) + ":" + pad2(t.getMinutes()); }
 function fmtDur(s) { if (s == null || !isFinite(s)) return "—"; s = Math.max(0, Math.round(s)); const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
   return d ? d + "d" + h + "h" : h ? h + "h" + pad2(m) + "m" : m ? m + "m" : s + "s"; }
@@ -145,11 +171,20 @@ function median(xs) { const v = fin(xs).sort((a, b) => a - b); if (!v.length) re
 function quant(xs, q) { const v = fin(xs).sort((a, b) => a - b); if (!v.length) return null; const i = (v.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return v[lo] + (v[hi] - v[lo]) * (i - lo); }
 function mean(xs) { const v = fin(xs); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; }
 function sd(xs) { const v = fin(xs); if (v.length < 2) return null; const m = mean(v); return Math.sqrt(v.reduce((a, b) => a + (b - m) ** 2, 0) / (v.length - 1)); }
-const chip = (txt, cls) => `<span class="chip ${cls}">${esc(txt)}</span>`;
-const stChip = st => chip(T[st] || st, st);
+const chip = (txt, klass) => `<span class="chip ${cls(klass)}">${esc(txt)}</span>`;
+const stChip = (st, auto) => auto ? `<span class="chip done auto">${esc(T.done)}*</span>` : chip(T[st] || st, st);
 function stepAt(curve, x) { let v = null; for (const p of curve) { if (p[0] <= x) v = p[1]; else break; } return v; }
-function md(text) {  // tiny markdown: #/## headings, - bullets, **b**, *i*, `code`, [t](u), paragraphs
-  const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|\W)\*(?!\s)(.+?)\*(?=\W|$)/g, "$1<i>$2</i>").replace(/`([^`]+)`/g, "<code>$1</code>").replace(/\[([^\]]+)\]\((https?:[^)]+|#[^)]*)\)/g, '<a href="$2" target="_blank">$1</a>');
+function lerpAt(curve, x) { if (!curve.length || x < curve[0][0] || x > curve[curve.length - 1][0]) return null;
+  for (let i = 1; i < curve.length; i++) { if (curve[i][0] >= x) { const [x0, y0] = curve[i - 1], [x1, y1] = curve[i]; return x1 === x0 ? y1 : y0 + (y1 - y0) * (x - x0) / (x1 - x0); } } return curve[curve.length - 1][1]; }
+function niceStep(range, n) { const raw = range / n, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return p * (m < 1.5 ? 1 : m < 3 ? 2 : m < 7 ? 5 : 10); }
+function ticksLinear(lo, hi, n) { if (!(hi > lo)) return [lo]; const st = niceStep(hi - lo, n); const out = []; for (let v = Math.ceil(lo / st) * st; v <= hi + st * 1e-9; v += st) out.push(+v.toFixed(12)); return out; }
+function ticksLog(lo, hi) { const a = Math.floor(Math.log10(lo)), b = Math.ceil(Math.log10(hi)); const out = [];
+  if (b - a >= 2) { for (let e = a; e <= b; e++) { const v = Math.pow(10, e); if (v >= lo / 1.0001 && v <= hi * 1.0001) out.push(v); } }
+  else for (let e = a; e <= b; e++) for (const m of [1, 2, 5]) { const v = m * Math.pow(10, e); if (v >= lo / 1.0001 && v <= hi * 1.0001) out.push(v); }
+  return out.length >= 2 ? out : [lo, hi]; }
+function md(text) {
+  const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/(^|\W)\*(?!\s)(.+?)\*(?=\W|$)/g, "$1<i>$2</i>").replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+|#[^)\s]*)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
   let out = "", inList = false, para = [];
   const flush = () => { if (para.length) { out += `<p>${inl(para.join(" "))}</p>`; para = []; } if (inList) { out += "</ul>"; inList = false; } };
   for (const raw of String(text || "").split("\n")) { const line = raw.trimEnd();
@@ -162,224 +197,293 @@ function md(text) {  // tiny markdown: #/## headings, - bullets, **b**, *i*, `co
 
 // ---------------------------------------------------------------- data preparation
 function prep(d) {
-  const now = Date.now() / 1000, P = d.plan || {}, factors = P.factors || [], arms = d.arms || [];
+  const now = d._snapshot ? d.updated : Date.now() / 1000;
+  const P = d.plan || {}, factors = P.factors || [], arms = d.arms || [];
   const F = Object.fromEntries(factors.map(f => [f.id, f]));
   const levelIdx = Object.fromEntries(factors.map(f => [f.id, Object.fromEntries(f.levels.map((l, i) => [l.id, i]))]));
-  const color = (fid, lid) => { const f = F[fid]; if (!f) return PALETTE[0]; const lv = f.levels.find(l => l.id === String(lid)); return (lv && lv.color) || PALETTE[(levelIdx[fid][String(lid)] ?? 0) % PALETTE.length]; };
+  const color = (fid, lid) => { const f = F[fid]; if (!f) return PALETTE[0]; const lv = f.levels.find(l => l.id === String(lid));
+    return (lv && safeColor(lv.color)) || PALETTE[(levelIdx[fid][String(lid)] ?? 0) % PALETTE.length]; };
   const label = (fid, lid) => { const f = F[fid]; const lv = f && f.levels.find(l => l.id === String(lid)); return lv ? (lv.label || lv.id) : String(lid); };
   const metrics = P.metrics || [], xaxes = P.x_axes || [], scalars = P.scalars || [];
   const M = Object.fromEntries(metrics.map(m => [m.id, m])), X = Object.fromEntries(xaxes.map(x => [x.id, x])), S = Object.fromEntries(scalars.map(s => [s.id, s]));
   const base = P.baseline || null;
   const replicate = new Set(factors.filter(f => f.replicate || /^(seed|rep|replicate|run|trial)$/i.test(f.id)).map(f => f.id));
   const cellKey = (a, skip) => factors.filter(f => f.id !== skip && !replicate.has(f.id)).map(f => a.factors[f.id]).join("|");
-  // baseline final per cell (for ref lines + catch-up)
+  for (const a of arms) { a.provisional = !FINISHED.includes(a.status) || !!a.auto_closed; a.s = Object.assign({}, a.scalars); a.elapsed_min = a.start ? ((a.end || now) - a.start) / 60 : null; }
   const baseFinal = {};
   if (base) for (const s of scalars.filter(s => s.derive && s.derive.how === "catchup")) {
-    const fs = scalars.find(z => z.derive && z.derive.how === "best" && z.derive.metric === s.derive.metric);
-    if (!fs) continue;
+    const fs = scalars.find(z => z.derive && z.derive.how === "best" && z.derive.metric === s.derive.metric); if (!fs) continue;
     const groups = {};
-    for (const a of arms.filter(a => a.factors[base.factor] === base.level && a.status === "done")) (groups[cellKey(a, base.factor)] ||= []).push(a.scalars[fs.id]);
+    for (const a of arms.filter(a => a.factors[base.factor] === base.level && !a.provisional)) (groups[cellKey(a, base.factor)] ||= []).push(a.s[fs.id]);
     baseFinal[s.id] = { metric: s.derive.metric, final_id: fs.id, byCell: Object.fromEntries(Object.entries(groups).map(([k, v]) => [k, median(v)])) };
   }
-  for (const a of arms) {
-    a.s = Object.assign({}, a.scalars); a.provisional = !["done", "failed", "killed"].includes(a.status);
-    for (const [sid, bf] of Object.entries(baseFinal)) {
-      const ref = bf.byCell[cellKey(a, base.factor)], m = M[bf.metric], lower = !m || m.lower_is_better !== false;
-      const curve = (a.curves?.[bf.metric]?.minutes) || [];
-      if (ref == null) { a.s[sid] = null; continue; }
-      const p = curve.find(p => lower ? p[1] <= ref : p[1] >= ref);
-      a.s[sid] = p ? p[0] : (a.provisional ? null : Infinity);
-    }
-    a.elapsed_min = a.start ? ((a.end || now) - a.start) / 60 : null;
+  for (const a of arms) for (const [sid, bf] of Object.entries(baseFinal)) {
+    const ref = bf.byCell[cellKey(a, base.factor)], m = M[bf.metric], lower = !m || m.lower_is_better !== false;
+    const curve = (a.curves?.[bf.metric]?.minutes) || [];
+    if (ref == null) { a.s[sid] = null; continue; }
+    const p = curve.find(p => lower ? p[1] <= ref : p[1] >= ref); a.s[sid] = p ? p[0] : (a.provisional ? null : Infinity);
   }
   const sched = schedule(d, arms, now);
   return { now, P, factors, F, arms, color, label, metrics, xaxes, scalars, M, X, S, base, replicate, cellKey, sched, baseFinal };
 }
 
 function schedule(d, arms, now) {
-  const P = d.plan || {}, fin_s = (P.finalize_min || 0) * 60, phases = d.phases || [];
-  const doneDur = ph => median(arms.filter(a => a.phase === ph && a.status === "done" && a.start && a.end).map(a => (a.end - a.start) / 60));
-  const anyDur = median(arms.filter(a => a.status === "done" && a.start && a.end).map(a => (a.end - a.start) / 60));
-  const budgetOf = a => a.budget_min || P.budget_min || doneDur(a.phase) || anyDur || null;
+  const P = d.plan || {}, fin_s = (P.finalize_min || 0) * 60, phases = d.phases || [], byId = Object.fromEntries(phases.map(p => [p.id, p]));
+  const doneDur = ph => median(arms.filter(a => a.phase === ph && a.status === "done" && !a.auto_closed && a.start && a.end).map(a => (a.end - a.start) / 60));
+  const anyDur = median(arms.filter(a => a.status === "done" && !a.auto_closed && a.start && a.end).map(a => (a.end - a.start) / 60));
   const running = arms.filter(a => (a.status === "running" || a.status === "silent") && a.start);
-  const slotsN = Math.max(1, P.concurrency || running.length || 1), est = {}, slots = [];
-  for (const a of running) { const b = budgetOf(a); const e = b ? Math.max(now, a.start + b * 60 + fin_s) : now + 600; est[a.id] = { start: a.start, end: e }; slots.push(e); }
-  while (slots.length < slotsN) slots.push(now); slots.sort((x, y) => x - y);
-  for (const a of arms.filter(a => a.status === "queued")) { const b = budgetOf(a); const s = slots[0]; const e = s + (b ? b * 60 : 600) + fin_s; est[a.id] = { start: s, end: e, unknown: !b }; slots[0] = e; slots.sort((x, y) => x - y); }
-  for (const a of arms.filter(a => ["done", "failed", "killed"].includes(a.status))) est[a.id] = { start: a.start, end: a.end || a.start };
-  const ph = {}; const byId = Object.fromEntries(phases.map(p => [p.id, p]));
-  const resolve = p => {
-    if (ph[p.id]) return ph[p.id];
-    const deps = (p.depends_on || []).map(id => byId[id]).filter(Boolean).map(resolve);
-    const depEnd = deps.length ? Math.max(...deps.map(x => x.end || 0)) : null;
-    let r;
+  const slotsN = Math.max(1, P.concurrency || running.length || 1);
+  const priorOf = a => { const p = byId[a.phase]; return p && p.est_min && p.n ? p.est_min * slotsN / p.n : null; };
+  const budgetOf = a => a.budget_min || P.budget_min || doneDur(a.phase) || anyDur || priorOf(a) || null;
+  const est = {};
+  for (const a of running) {
+    let end = null, basis = null;
+    if (a.progress && a.progress.step > 0 && a.progress.total) { end = a.start + (now - a.start) * a.progress.total / a.progress.step; basis = "progress"; }
+    else { const b = budgetOf(a); if (b) { end = a.start + b * 60 + fin_s; basis = "budget"; } }
+    const overdue = end != null && end < now ? now - end : 0;
+    est[a.id] = { start: a.start, end: end == null ? null : Math.max(end, now), unknown: end == null, overdue, basis };
+  }
+  for (const a of arms.filter(a => FINISHED.includes(a.status))) est[a.id] = { start: a.start, end: a.end || a.start || null, unknown: !a.start };
+  const slots = running.map(a => est[a.id].end ?? now); while (slots.length < slotsN) slots.push(now); slots.sort((x, y) => x - y);
+  const order = [], seen = {}, cyclic = new Set();
+  const visit = p => { if (seen[p.id] === 2) return; if (seen[p.id] === 1) { cyclic.add(p.id); return; } seen[p.id] = 1; (p.depends_on || []).forEach(id => byId[id] && visit(byId[id])); seen[p.id] = 2; order.push(p); };
+  phases.forEach(visit);
+  const ph = {};
+  for (const p of order) {
+    const deps = (p.depends_on || []).map(id => ph[id]).filter(Boolean); const depEnd = deps.length ? Math.max(...deps.map(x => x.end || now)) : null;
+    const notBefore = Math.max(now, depEnd || now);
     if (p.kind === "arms" && (p.arms || []).length) {
-      const es = p.arms.map(id => est[id]).filter(Boolean);
-      const start = p.start || (es.length ? Math.min(...es.map(e => e.start)) : depEnd || now);
-      const end = p.status === "done" ? (p.end || Math.max(...es.map(e => e.end))) : (es.length ? Math.max(...es.map(e => e.end)) : start + (p.est_min || 30) * 60);
-      r = { start, end, estStart: !p.start, estEnd: p.status !== "done", frac: p.n ? (p.n_done + 0.5 * (p.n_running || 0)) / p.n : 0 };
+      for (const id of p.arms) { const a = arms.find(a => a.id === id); if (!a || a.status !== "queued") continue;
+        const b = budgetOf(a); const s = Math.max(slots[0], notBefore); const e = b ? s + b * 60 + fin_s : null;
+        est[id] = { start: s, end: e, unknown: !b }; slots[0] = e ?? s + (priorOf(a) || 0) * 60; slots.sort((x, y) => x - y); }
+      const es = p.arms.map(id => est[id]).filter(Boolean); const starts = fin(es.map(e => e.start)), ends = fin(es.map(e => e.end));
+      const start = p.start || (starts.length ? Math.min(...starts) : notBefore);
+      const unknown = p.status !== "done" && es.some(e => e.unknown);
+      let end = p.status === "done" ? (p.end || (ends.length ? Math.max(...ends) : start)) : (ends.length ? Math.max(...ends) : (p.est_min ? start + p.est_min * 60 : null));
+      let overdue = Math.max(0, ...es.map(e => e.overdue || 0));
+      if (p.status !== "done" && end != null && end <= now) { if (unknown) end = null; else { overdue = Math.max(overdue, now - end); end = now; } }
+      ph[p.id] = { start, end, estStart: !p.start, estEnd: p.status !== "done", unknown, overdue, frac: p.n ? Math.min(1, (p.n_finished + 0.5 * (p.n_running || 0)) / p.n) : 0, cyclic: cyclic.has(p.id) };
     } else {
-      const start = p.start || (p.status === "running" ? now : Math.max(depEnd || now, now));
-      const end = p.status === "done" ? (p.end || start) : (start + (p.est_min || 30) * 60 > now ? start + (p.est_min || 30) * 60 : now + 60);
-      r = { start, end, estStart: !p.start, estEnd: p.status !== "done", frac: p.status === "done" ? 1 : p.status === "running" ? Math.min(0.9, (now - start) / ((p.est_min || 30) * 60)) : 0 };
+      const planned = p.est_min ? p.est_min * 60 : null;
+      const start = p.start || (p.status === "running" ? now : notBefore);
+      let end = p.status === "done" ? (p.end || start) : (planned ? start + planned : null), overdue = 0;
+      if (p.status !== "done" && end != null && end < now) { overdue = now - end; end = now; }
+      ph[p.id] = { start, end, estStart: !p.start, estEnd: p.status !== "done", unknown: p.status !== "done" && !planned, overdue,
+        frac: p.status === "done" ? 1 : p.status === "running" ? (planned ? Math.min(0.95, (now - start) / planned) : 0.5) : 0, cyclic: cyclic.has(p.id) };
     }
-    ph[p.id] = r; return r;
-  };
-  phases.forEach(resolve);
+    ph[p.id].planned = p.est_min ? p.est_min * 60 : null;
+  }
   const open = phases.filter(p => p.status !== "done");
-  const eta = open.length ? Math.max(...open.map(p => ph[p.id].end)) : null;
-  return { est, phases: ph, eta, allDone: phases.length > 0 && !open.length, t0: d.plan?.t0 || Math.min(...arms.filter(a => a.start).map(a => a.start), now) };
+  const knownEnds = fin(open.map(p => ph[p.id] && ph[p.id].end));
+  const eta = knownEnds.length ? Math.max(...knownEnds) : null;
+  const t0s = fin(arms.map(a => a.start).concat([d.plan?.t0]));
+  return { est, phases: ph, eta, etaPartial: open.some(p => ph[p.id] && ph[p.id].unknown), allDone: phases.length > 0 && !open.length, cyclic,
+    t0: t0s.length ? Math.min(...t0s) : now, overdue: open.some(p => ph[p.id] && ph[p.id].overdue > 0) };
+}
+
+// ---------------------------------------------------------------- ETA history (local, per campaign)
+function etaHistory(d, eta, now) {
+  if (d._snapshot || !d.name) return d.eta_history || [];
+  const key = "expdash_eta_" + d.name; let h = [];
+  try { h = JSON.parse(localStorage.getItem(key) || "[]"); } catch (e) { h = []; }
+  const last = h[h.length - 1];
+  if (eta && (!last || (now - last[0] > 60 && Math.abs(eta - last[1]) > 30))) { h.push([Math.round(now), Math.round(eta)]); h = h.slice(-300); try { localStorage.setItem(key, JSON.stringify(h)); } catch (e) {} }
+  return h;
+}
+function sparkline(h) {
+  if (h.length < 3) return "";
+  const xs = h.map(p => p[0]), ys = h.map(p => p[1] - p[0]); const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const X = x => 2 + (x - x0) / Math.max(1, x1 - x0) * 66, Y = y => 20 - (y - y0) / Math.max(1, y1 - y0) * 18;
+  return `<svg class="spark" viewBox="0 0 70 22" title="${T.eta_hist}"><path d="${h.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1] - p[0]).toFixed(1)).join("")}" fill="none" stroke="var(--muted)" stroke-width="1.2"/></svg>`;
 }
 
 // ---------------------------------------------------------------- frame
-function render(d) {
+function render(d, force) {
+  const changed = d.updated !== LAST_UPDATED || TAB !== LAST_TAB || force;
   D = d; T = L[d.lang] || L.en; document.documentElement.lang = d.lang || "en"; C = prep(d);
   const { now, arms, sched } = C;
   document.title = d.title || "experiment dashboard"; $("title").textContent = d.title || d.name || "experiment"; $("subtitle").textContent = d.subtitle || "";
-  if (!window.__SNAPSHOT__) { const age = now - d.updated, stale = age > 3 * (d.collector_interval_s || 30) + 15;
+  if (d._snapshot) { $("upd").className = "badge"; $("upd").textContent = T.snapshot + " · " + fmtT(d.updated); }
+  else { const age = now - d.updated, stale = age > 3 * (d.collector_interval_s || 30) + 15;
     $("upd").className = "badge " + (stale ? "stale" : "fresh"); $("upd").textContent = (stale ? T.stale + " · " : "") + T.updated + " " + fmtDur(age) + " " + T.ago + (d.host ? " · " + d.host : ""); }
-  // banner: where we are
+  // banner
   const cur = (d.phases || []).find(p => p.status === "running") || (d.phases || []).find(p => p.status !== "done");
   let auto = "";
   if (sched.allDone) auto = `<b>${T.done}</b>`;
-  else if (cur) { const e = sched.phases[cur.id]; auto = `<b>${esc(cur.name)}</b> · ${cur.kind === "arms" ? `${cur.n_done}/${cur.n} ${T.arms} ${T.done}${cur.n_running ? `, ${cur.n_running} ${T.running}` : ""}${cur.n_silent ? `, <span style="color:var(--silent)">${cur.n_silent} ${T.silent}</span>` : ""}` : T[cur.status]}${e ? ` · ETA ${fmtT(e.end)} (${T.left} ${fmtDur(e.end - now)})` : ""}`; }
-  $("now").innerHTML = (d.now_doing ? `${esc(d.now_doing)}<div class="small" style="margin-top:2px">${auto}</div>` : auto) + (d.phase_note ? `<div class="small" style="margin-top:2px">${esc(d.phase_note)}</div>` : "");
-  const tot = (d.phases || []).reduce((s, p) => s + Math.max(1, (sched.phases[p.id].end - sched.phases[p.id].start) / 60), 0) || 1;
-  $("strip").innerHTML = (d.phases || []).map(p => { const e = sched.phases[p.id]; const w = Math.max(1, (e.end - e.start) / 60) / tot * 100;
-    return `<div class="seg ${p.status}" style="flex:${w.toFixed(2)} 1 0" title="${esc(p.name)} · ${T[p.status]} · ${fmtT(e.start)}–${fmtT(e.end)}" onclick="showTab('progress')"><div class="fill" style="width:${Math.round(100 * e.frac)}%"></div><div class="lbl">${esc(p.name)}</div></div>`; }).join("");
-  // tabs
-  const counts = { results: (C.P.plots || []).length, progress: arms.length, ops: (d.incidents || []).length };
+  else if (cur) { const e = sched.phases[cur.id];
+    auto = `<b>${esc(cur.name)}</b> · ` + (cur.kind === "arms" ? `${cur.n_done}/${cur.n} ${T.arms} ${T.done}${cur.n_running ? `, ${cur.n_running} ${T.running}` : ""}${cur.n_silent ? `, <span style="color:var(--silent)">${cur.n_silent} ${T.silent}</span>` : ""}${cur.n_auto_closed ? `, <span style="color:var(--warn)">${cur.n_auto_closed} ${T.auto}</span>` : ""}` : (T[cur.status] || cur.status))
+      + (e && e.end ? ` · ETA ${fmtT(e.end)} (${T.left} ${fmtDur(e.end - now)})` : e && e.unknown ? ` · ETA ${T.unknown}` : "") + (e && e.overdue ? ` <span class="overdue">· ${T.overdue} ${fmtDur(e.overdue)}</span>` : ""); }
+  const ndAge = d.now_doing_t ? now - d.now_doing_t : null;
+  $("now").innerHTML = (d.now_doing ? `${esc(d.now_doing)}${ndAge != null ? `<span class="age ${ndAge > 3600 ? "old" : ""}">${T.set} ${fmtDur(ndAge)} ${T.ago}</span>` : ""}<div class="small" style="margin-top:2px">${auto}</div>` : auto)
+    + (d.phase_note ? `<div class="small" style="margin-top:2px">${esc(d.phase_note)}</div>` : "");
+  const tot = (d.phases || []).reduce((s, p) => { const e = sched.phases[p.id]; return s + Math.max(1, ((e.end || e.start + 600) - e.start) / 60); }, 0) || 1;
+  $("strip").innerHTML = (d.phases || []).map(p => { const e = sched.phases[p.id]; const w = Math.max(1, ((e.end || e.start + 600) - e.start) / 60) / tot * 100;
+    return `<div class="seg ${cls(p.status)} ${e.overdue ? "overdue" : ""}" style="flex:${w.toFixed(2)} 1 0" title="${esc(p.name)} · ${T[p.status] || p.status} · ${fmtT(e.start)}–${e.end ? fmtT(e.end) : "?"}" onclick="showTab('progress')"><div class="fill" style="width:${Math.round(100 * e.frac)}%"></div><div class="lbl">${esc(p.name)}</div></div>`; }).join("");
+  const counts = { results: (C.P.plots || []).length, progress: arms.length, ops: (d.incidents || []).length + (d.plan_warnings || []).length };
   $("tabs").innerHTML = Object.entries(T.tabs).map(([k, v]) => `<button class="tab ${k === TAB ? "on" : ""}" data-tab="${k}">${v}${counts[k] ? `<span class="n">${counts[k]}</span>` : ""}</button>`).join("");
   document.querySelectorAll(".tab").forEach(b => b.onclick = () => showTab(b.dataset.tab));
-  renderTab();
+  if (changed) { renderTab(); LAST_UPDATED = d.updated; LAST_TAB = TAB; }
   $("foot").textContent = `${d.schema || "expdash"} · collector every ${d.collector_interval_s || "?"} s · page refresh ${REFRESH_MS / 1000} s · ${arms.length} arms · ${(C.P.plots || []).length} plots · ${C.metrics.length} metrics × ${C.xaxes.length} x-axes · ${C.scalars.length} scalars`;
 }
-function showTab(t) { TAB = t; const h = new URLSearchParams(location.hash.slice(1)); h.set("tab", t); location.hash = h.toString(); if (D) render(D); }
-function renderTab() { document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === "tab-" + TAB)); ({ overview: rOverview, plan: rPlan, progress: rProgress, results: rResults, explore: rExplore, ops: rOps })[TAB]($("tab-" + TAB)); }
+function setHash(kv) { const h = new URLSearchParams(location.hash.slice(1)); for (const [k, v] of Object.entries(kv)) v == null || v === "" ? h.delete(k) : h.set(k, v); history.replaceState(null, "", "#" + h.toString()); }
+function showTab(t) { TAB = t; setHash({ tab: t }); if (D) render(D, true); }
+function renderTab() { document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === "tab-" + TAB));
+  ({ overview: rOverview, plan: rPlan, progress: rProgress, results: rResults, explore: rExplore, ops: rOps })[TAB]($("tab-" + TAB)); }
 
 // ---------------------------------------------------------------- tab: overview
 function rOverview(root) {
-  const { arms, now, sched } = C, d = D; const n = s => arms.filter(a => a.status === s).length;
+  const { arms, now, sched } = C, d = D; const n = s => arms.filter(a => a.status === s).length; const nAuto = arms.filter(a => a.auto_closed).length;
   const cur = (d.phases || []).find(p => p.status === "running") || (d.phases || []).find(p => p.status !== "done");
-  const cost = arms.reduce((s, a) => s + (a.s.cost_usd || 0), 0);
-  const tiles = [[T.t_done, `${n("done")} / ${arms.length}`], [T.t_run, `${n("running")}${n("silent") ? ` <span style="color:var(--silent);font-size:14px">+${n("silent")} ${T.silent}</span>` : ""}`], [T.t_queued, n("queued")],
-    [T.t_bad, `${n("failed") + n("killed")} / ${n("silent")}`, null, (n("failed") + n("silent")) ? "color:var(--bad)" : ""],
+  const costIds = C.scalars.filter(s => s.unit === "$").map(s => s.id); const cost = arms.reduce((s, a) => s + costIds.reduce((q, id) => q + (a.s[id] || 0), 0), 0);
+  const bad = n("failed") + n("killed") + n("silent") + nAuto;
+  const hist = etaHistory(d, sched.eta, now);
+  const tiles = [[T.t_done, `${n("done") - nAuto} / ${arms.length}`], [T.t_run, `${n("running")}`, n("silent") ? `<span style="color:var(--silent)">+${n("silent")} ${T.silent}</span>` : ""], [T.t_queued, n("queued")],
+    [T.t_bad, bad, `${n("failed") + n("killed")} ${T.failed} · ${n("silent")} ${T.silent} · ${nAuto} ${T.auto}`, bad ? "color:var(--bad)" : ""],
     [T.t_phase, cur ? esc(cur.name) : (sched.allDone ? T.done : "—"), cur && cur.kind === "arms" ? `${cur.n_done}/${cur.n}` : "", "", true],
-    [T.t_eta, sched.eta ? fmtT(sched.eta) : (sched.allDone ? "✓" : "—"), sched.eta ? `${T.left} ${fmtDur(sched.eta - now)}` : "", "", true],
+    [T.t_eta, sched.eta ? fmtT(sched.eta) + (sched.etaPartial ? " ?" : "") : (sched.allDone ? "✓" : T.unknown), sched.eta ? `${T.left} ${fmtDur(sched.eta - now)}${sched.overdue ? ` · <span class="overdue">${T.overdue}</span>` : ""}` : "", "", true, sparkline(hist)],
     [T.t_evals, arms.reduce((s, a) => s + (a.s.n_records || 0), 0).toLocaleString()]];
   if (cost > 0) tiles.push([T.t_cost, "$" + cost.toFixed(0)]);
-  let h = `<div class="tiles">${tiles.map(([k, v, hint, style, small]) => `<div class="tile"><div class="k">${k}</div><div class="v ${small ? "small" : ""}" style="${style || ""}">${v}</div>${hint ? `<div class="h">${hint}</div>` : ""}</div>`).join("")}</div>`;
+  let h = `<div class="tiles">${tiles.map(([k, v, hint, style, small, extra]) => `<div class="tile"><div class="k">${k}</div><div class="v ${small ? "small" : ""}" style="${style || ""}">${v}</div>${hint ? `<div class="h">${hint}</div>` : ""}${extra || ""}</div>`).join("")}</div>`;
+  if ((d.plan_warnings || []).length || Object.keys(d.adapter_errors || {}).length) h += `<div class="warnbox">${(d.plan_warnings || []).length ? `${T.plan_warn}: ${d.plan_warnings.length}` : ""} ${Object.keys(d.adapter_errors || {}).length ? `· ${T.adapter_err}: ${Object.keys(d.adapter_errors).length}` : ""} <a href="#" onclick="showTab('ops');return false">→ ${T.tabs.ops}</a></div>`;
   const hs = d.hypotheses || [], gs = d.gates || [];
-  if (hs.length || gs.length) h += `<div class="card"><div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center">${hs.map(x => `<span title="${esc(x.text)}">${chip(x.id + " · " + (T[x.status] || x.status), x.status)}</span>`).join("")}<span style="color:var(--grid)">|</span>${gs.map(g => `<span title="${esc(g.detail || "")}">${chip(g.name.split("·")[0].trim() + " · " + (T[g.status] || g.status), g.status)}</span>`).join("")}</div></div>`;
+  if (hs.length || gs.length) h += `<div class="card"><div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">${hs.map(x => `<span title="${esc(x.text)}">${chip(x.id + " · " + (T[x.status] || x.status), x.status)}</span>`).join("")}${hs.length && gs.length ? `<span style="color:var(--grid)">|</span>` : ""}${gs.map(gateChip).join("")}</div></div>`;
   h += `<h2 style="margin-top:14px">${T.headline}</h2><div class="plots" id="ov-plots"></div>`;
   const inc = (d.incidents || []).slice(-3).reverse(), lg = (d.log || []).slice(-6).reverse();
-  h += `<div class="grid2"><div class="card"><h2>${T.incidents}</h2>${inc.length ? inc.map(i => `<div class="inc ${i.severity || "warn"}"><time>${i.t ? fmtT(i.t) : ""}</time>${esc(i.text)}</div>`).join("") : `<span class="small">${T.none}</span>`}</div>
-    <div class="card"><h2>${T.recent}</h2><pre class="log">${lg.map(l => (l.t ? fmtT(l.t) + "  " : "") + esc(l.text)).join("\n") || "—"}</pre></div></div>`;
+  h += `<div class="grid2"><div class="card"><h2>${T.incidents}</h2>${inc.length ? inc.map(i => `<div class="inc ${cls(i.severity || "warn")}"><time>${i.t ? fmtT(i.t) : ""}</time>${esc(i.text)}</div>`).join("") : `<span class="small">${T.none}</span>`}</div>
+    <div class="card"><h2>${T.recent}</h2><pre class="log">${logLines(lg)}</pre></div></div>`;
   root.innerHTML = h;
-  const specs = (C.P.plots || []).filter(p => p.tab === "overview"); (specs.length ? specs : (C.P.plots || []).slice(0, 2)).forEach(s => drawPlot(s, $("ov-plots")));
+  const specs = (C.P.plots || []).filter(p => p.tab === "overview"); (specs.length ? specs : (C.P.plots || []).slice(0, 2)).forEach(s => $("ov-plots").appendChild(drawPlot(s)));
 }
+function gateChip(g) { const r = g.result || {}; const manual = g.status && g.status !== "pending"; const st = manual ? g.status : (r.auto_status ? r.auto_status : "pending");
+  const txt = (g.id || g.name) + " · " + (T[st] || st) + (!manual && r.auto_status && r.provisional ? "*" : "") + (r.p != null ? ` p=${r.p < 0.001 ? "<0.001" : r.p.toFixed(3)}` : "");
+  return `<span title="${esc(g.name || "")}${r.effect != null ? ` · ${T.effect} ${(100 * r.effect).toFixed(1)}% · n=${r.n}` : ""}${g.detail ? " · " + esc(g.detail) : ""}">${chip(txt, st)}</span>`; }
+function logLines(items) { return items.map(l => (l.t ? fmtT(l.t) + "  " : "") + (l.auto ? `<span class="auto">${esc(l.text)}</span>` : esc(l.text))).join("\n") || "—"; }
 
 // ---------------------------------------------------------------- tab: plan
 function rPlan(root) {
   const { P, factors, arms, metrics, xaxes, scalars } = C, d = D;
-  let h = `<div class="grid2"><div class="card">${md(P.description || d.notes || "")}${(P.links || []).length ? `<div class="small" style="margin-top:8px">${T.links}: ${P.links.map(l => `<a href="${esc(l.url)}" target="_blank">${esc(l.label)}</a>`).join(" · ")}</div>` : ""}</div>`;
-  h += `<div><div class="card"><h2>${T.hypotheses}</h2>${(d.hypotheses || []).length ? `<table><tr><th>id</th><th>hypothesis</th><th>prediction</th><th>${T.status}</th><th>evidence</th></tr>${d.hypotheses.map(x => `<tr><td><b>${esc(x.id)}</b></td><td>${esc(x.text)}</td><td class="small">${esc(x.prediction || "")}</td><td>${chip(T[x.status] || x.status, x.status)}</td><td class="small">${esc(x.evidence || "")}</td></tr>`).join("")}</table>` : `<span class="small">${T.none}</span>`}</div>`;
-  h += `<div class="card"><h2>${T.gates}</h2>${(d.gates || []).length ? `<table><tr><th>gate</th><th>${T.status}</th><th>detail</th></tr>${d.gates.map(g => `<tr><td>${esc(g.name)}</td><td>${chip(T[g.status] || g.status, g.status)}</td><td class="small">${esc(g.detail || "")}</td></tr>`).join("")}</table>` : `<span class="small">${T.none}</span>`}</div></div></div>`;
+  if (OPEN_PHASES === null) OPEN_PHASES = new Set((d.phases || []).filter(p => p.status === "running").map(p => p.id));
+  let h = `<div class="grid2"><div class="card">${md(P.description || d.notes || "")}${(P.links || []).length ? `<div class="small" style="margin-top:8px">${T.links}: ${P.links.map(l => `<a href="${esc(safeUrl(l.url))}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join(" · ")}</div>` : ""}</div>`;
+  h += `<div><div class="card"><h2>${T.hypotheses}</h2>${(d.hypotheses || []).length ? `<div class="scroll"><table><tr><th>id</th><th>hypothesis</th><th>prediction</th><th>${T.status}</th><th>evidence</th></tr>${d.hypotheses.map(x => `<tr><td><b>${esc(x.id)}</b></td><td>${esc(x.text)}</td><td class="small">${esc(x.prediction || "")}</td><td>${chip(T[x.status] || x.status, x.status)}</td><td class="small">${esc(x.evidence || "")}</td></tr>`).join("")}</table></div>` : `<span class="small">${T.none}</span>`}</div>`;
+  h += `<div class="card"><h2>${T.gates}</h2>${(d.gates || []).length ? `<div class="scroll"><table><tr><th>gate</th><th>${T.status}</th><th>result</th><th>detail</th></tr>${d.gates.map(g => { const r = g.result || {};
+    return `<tr><td>${esc(g.name || g.id)}</td><td>${gateChip(g)}</td><td class="small">${r.kind ? `${r.kind}${r.p != null ? ` · p=${r.p < 0.001 ? "<0.001" : r.p.toFixed(3)}` : ""}${r.effect != null ? ` · ${T.effect} ${(100 * r.effect).toFixed(1)}%` : ""} · n=${r.n}${r.provisional ? " · *" : ""}${r.error ? " · " + esc(r.error) : ""}` : ""}</td><td class="small">${esc(g.detail || "")}</td></tr>`; }).join("")}</table></div>` : `<span class="small">${T.none}</span>`}</div></div></div>`;
   h += `<div class="card"><h2>${T.design} <span class="small">· ${arms.length} ${T.arms} · ${T.factors_note}</span></h2><div class="grid3">${factors.map(f => `<div><h3>${esc(f.label || f.id)} <span class="small">(${f.levels.length})</span></h3>${f.levels.map(l => `<div style="margin:3px 0"><span class="swatch" style="background:${C.color(f.id, l.id)}"></span><b>${esc(l.label || l.id)}</b>${l.desc ? ` <span class="small">— ${esc(l.desc)}</span>` : ""}</div>`).join("")}</div>`).join("")}
     <div><h3>budget</h3><div class="kv"><span class="k">per arm</span><span>${P.budget_min ? P.budget_min + " min" : "—"}</span><span class="k">concurrency</span><span>${P.concurrency || "—"}</span><span class="k">finalize</span><span>${P.finalize_min || 0} min</span><span class="k">silent after</span><span>${P.silent_after_min || "—"} min</span>${P.baseline ? `<span class="k">baseline</span><span>${esc(C.label(P.baseline.factor, P.baseline.level))}</span>` : ""}</div></div></div></div>`;
-  h += `<h2 style="margin-top:14px">${T.phases}</h2>` + (d.phases || []).map(p => { const e = C.sched.phases[p.id]; return `<div class="card clickable phasecard ${OPEN_PHASES.has(p.id) ? "open" : ""}" data-ph="${esc(p.id)}">
-    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><h3>${esc(p.name)}</h3>${stChip(p.status)}<span class="small">${p.kind}${p.kind === "arms" ? ` · ${p.n_done}/${p.n} ${T.arms}` : ""} · ${T.planned} ${p.est_min ? p.est_min + " min" : "—"} · ${e.estEnd ? "est. " : ""}${fmtDur(e.end - e.start)}${(p.depends_on || []).length ? ` · ${T.depends} ${p.depends_on.join(", ")}` : ""}</span></div>
-    <div class="prog"><i style="width:${Math.round(100 * e.frac)}%"></i></div>
-    <div class="body"><div class="kv">${["purpose", "method", "criteria", "outputs"].filter(k => p[k]).map(k => `<span class="k">${T[k]}</span><span>${esc(p[k])}</span>`).join("")}${p.note ? `<span class="k">note</span><span>${esc(p.note)}</span>` : ""}<span class="k">${T.start} / ${T.end}</span><span class="${e.estStart ? "est" : ""}">${fmtT(e.start)}</span><span class="k"></span><span class="${e.estEnd ? "est" : ""}">${fmtT(e.end)}</span></div></div></div>`; }).join("");
-  h += `<div class="card"><h2>${T.measures}</h2><div class="grid3"><div><h3>${T.metric}</h3>${metrics.map(m => `<div class="small" style="color:var(--ink)"><b>${esc(m.label || m.id)}</b> <span class="small">${m.unit ? "(" + esc(m.unit) + ") " : ""}${m.curve}${m.lower_is_better === false ? " ↑" : " ↓"}</span></div>`).join("") || T.none}</div>
+  h += `<h2 style="margin-top:14px">${T.phases}</h2>` + (d.phases || []).map(p => { const e = C.sched.phases[p.id]; const open = OPEN_PHASES.has(p.id);
+    const proj = e.end ? e.end - e.start : null, plannedS = e.planned; const drift = proj && plannedS ? Math.round(100 * (proj - plannedS) / plannedS) : null;
+    return `<div class="card clickable phasecard ${open ? "open" : ""}" data-ph="${esc(p.id)}">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><h3>${esc(p.name)}</h3>${stChip(p.status)}<span class="small">${p.kind === "manual" ? T.kind_manual : `${p.n_done}/${p.n} ${T.arms}`}${p.n_auto_closed ? ` · <span style="color:var(--warn)">${p.n_auto_closed} ${T.auto}</span>` : ""} · ${T.planned} ${plannedS ? fmtDur(plannedS) : "—"} · ${T.projected} ${proj != null ? (e.estEnd ? "<i>" : "") + fmtDur(proj) + (e.estEnd ? "</i>" : "") : T.unknown}${drift != null && Math.abs(drift) >= 5 ? ` <span class="${drift > 0 ? "overdue" : ""}">(${drift > 0 ? "+" : ""}${drift}%)</span>` : ""}${(p.depends_on || []).length ? ` · ${T.depends} ${esc(p.depends_on.join(", "))}` : ""}</span></div>
+    <div class="prog"><i style="width:${Math.round(100 * e.frac)}%"></i></div>${!open && p.purpose ? `<div class="peek">${esc(p.purpose)}</div>` : ""}
+    <div class="body"><div class="kv">${["purpose", "method", "criteria", "outputs"].filter(k => p[k]).map(k => `<span class="k">${T[k]}</span><span>${esc(p[k])}</span>`).join("")}${p.note ? `<span class="k">note</span><span>${esc(p.note)}</span>` : ""}<span class="k">${T.start} / ${T.end}</span><span><span class="${e.estStart ? "est" : ""}">${fmtT(e.start)}</span> → <span class="${e.estEnd ? "est" : ""}">${e.end ? fmtT(e.end) : T.unknown}</span>${e.overdue ? ` <span class="overdue">${T.overdue} ${fmtDur(e.overdue)}</span>` : ""}</span></div></div></div>`; }).join("");
+  const curveLabel = c => ({ best_so_far: T.curve_best, raw: T.curve_raw, cumsum: T.curve_cumsum })[c] || esc(c);
+  h += `<div class="card"><h2>${T.measures}</h2><div class="grid3"><div><h3>${T.metric}</h3>${metrics.map(m => `<div class="small" style="color:var(--ink)"><b>${esc(m.label || m.id)}</b> <span class="small">${m.unit ? "(" + esc(m.unit) + ") " : ""}${curveLabel(m.curve)}${m.lower_is_better === false ? " ↑" : " ↓"}</span></div>`).join("") || T.none}</div>
     <div><h3>${T.xaxis}</h3>${xaxes.map(x => `<div class="small" style="color:var(--ink)"><b>${esc(x.label || x.id)}</b></div>`).join("")}</div>
-    <div><h3>${T.scalar}</h3>${scalars.map(s => `<div class="small" style="color:var(--ink)"><b>${esc(s.label || s.id)}</b> <span class="small">${s.unit ? "(" + esc(s.unit) + ")" : ""}${s.derive ? " · " + s.derive.how + (s.derive.metric ? " of " + s.derive.metric : "") : ""}</span></div>`).join("")}</div></div></div>`;
+    <div><h3>${T.scalar}</h3>${scalars.map(s => `<div class="small" style="color:var(--ink)"><b>${esc(s.label || s.id)}</b> <span class="small">${s.unit ? "(" + esc(s.unit) + ")" : ""}${s.derive ? " · " + esc(s.derive.how) + (s.derive.metric ? " of " + esc(s.derive.metric) : "") : ""}${s.lower_is_better === false ? " ↑" : ""}</span></div>`).join("")}</div></div></div>`;
   root.innerHTML = h;
-  root.querySelectorAll(".phasecard").forEach(c => c.onclick = () => { const id = c.dataset.ph; OPEN_PHASES.has(id) ? OPEN_PHASES.delete(id) : OPEN_PHASES.add(id); c.classList.toggle("open"); });
+  root.querySelectorAll(".phasecard").forEach(c => c.onclick = () => { const id = c.dataset.ph; OPEN_PHASES.has(id) ? OPEN_PHASES.delete(id) : OPEN_PHASES.add(id); rPlan(root); });
 }
 
 // ---------------------------------------------------------------- tab: progress
 function rProgress(root) {
-  const { arms, now, sched, factors, P } = C, d = D;
+  const { arms, now, sched, factors } = C, d = D;
   let h = `<div class="card"><h2>${T.gantt}</h2><div id="gantt"></div><div class="explain">${T.est_note}</div></div>`;
-  h += `<div class="card"><table><tr><th>${T.phase}</th><th>${T.arms}</th><th>${T.start}</th><th>${T.end}</th><th>${T.dur}</th><th>${T.left}</th><th>${T.status}</th></tr>${(d.phases || []).map(p => { const e = sched.phases[p.id];
-    return `<tr><td><b>${esc(p.name)}</b>${p.note ? `<br><span class="small">${esc(p.note)}</span>` : ""}</td><td class="num">${p.kind === "arms" ? `${p.n_done}/${p.n}${p.n_silent ? ` <span style="color:var(--silent)">(${p.n_silent} ${T.silent})</span>` : ""}` : p.kind}</td>
-      <td class="${e.estStart ? "est" : ""}">${fmtT(e.start)}</td><td class="${e.estEnd ? "est" : ""}">${fmtT(e.end)}</td><td class="num">${fmtDur(e.end - e.start)}</td><td class="num">${p.status === "done" ? "—" : fmtDur(e.end - now)}</td><td>${stChip(p.status)}</td></tr>`; }).join("")}</table></div>`;
-  // matrix controls
-  const fids = factors.map(f => f.id); MATRIX.rows = MATRIX.rows || fids[1] || fids[0]; MATRIX.cols = MATRIX.cols || fids[0];
-  h += `<div class="card"><h2>${T.matrix}</h2><div class="controls"><label>${T.rows} <select id="mrows">${fids.map(f => `<option value="${f}" ${f === MATRIX.rows ? "selected" : ""}>${esc(C.F[f].label || f)}</option>`).join("")}</select></label>
-    <label>${T.cols} <select id="mcols">${fids.map(f => `<option value="${f}" ${f === MATRIX.cols ? "selected" : ""}>${esc(C.F[f].label || f)}</option>`).join("")}</select></label></div><div id="matrix" style="overflow-x:auto"></div></div>`;
-  h += `<div class="card"><h2>${T.armtable}</h2><div class="controls"><label>${T.filter} <select id="afilter">${["all", "running", "silent", "queued", "done", "failed"].map(s => `<option value="${s}" ${s === FILTER ? "selected" : ""}>${s === "all" ? T.all : T[s]}</option>`).join("")}</select></label></div><div id="armtable" style="overflow-x:auto"></div></div>`;
+  h += `<div class="card scroll"><table><tr><th>${T.phase}</th><th>${T.arms}</th><th>${T.start}</th><th>${T.end}</th><th>${T.planned}</th><th>${T.projected}</th><th>${T.left}</th><th>${T.status}</th></tr>${(d.phases || []).map(p => { const e = sched.phases[p.id];
+    return `<tr><td><b>${esc(p.name)}</b>${p.note ? `<br><span class="small">${esc(p.note)}</span>` : ""}${e.cyclic ? ` <span class="chip fail">cycle</span>` : ""}</td><td class="num">${p.kind === "arms" ? `${p.n_done}/${p.n}${p.n_silent ? ` <span style="color:var(--silent)">(${p.n_silent} ${T.silent})</span>` : ""}${p.n_auto_closed ? ` <span style="color:var(--warn)">(${p.n_auto_closed} ${T.auto})</span>` : ""}` : T.kind_manual}</td>
+      <td class="${e.estStart ? "est" : ""}">${fmtT(e.start)}</td><td class="${e.estEnd ? "est" : ""}">${e.end ? fmtT(e.end) : T.unknown}</td><td class="num">${e.planned ? fmtDur(e.planned) : "—"}</td><td class="num ${e.estEnd ? "est" : ""}">${e.end ? fmtDur(e.end - e.start) : "—"}</td>
+      <td class="num">${p.status === "done" ? "—" : e.overdue ? `<span class="overdue">${T.overdue} ${fmtDur(e.overdue)}</span>` : e.end ? fmtDur(e.end - now) : "—"}</td><td>${stChip(p.status)}</td></tr>`; }).join("")}</table></div>`;
+  const fids = factors.map(f => f.id);
+  if (!MATRIX.rows) { MATRIX.rows = fids[1] || fids[0]; MATRIX.cols = fids.length > 1 ? fids[0] : ""; }
+  const opt = (v, sel) => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${v ? esc(C.F[v].label || v) : T.none_}</option>`;
+  h += `<div class="card"><h2>${T.matrix}</h2><div class="controls"><label>${T.rows} <select id="mrows">${fids.map(f => opt(f, MATRIX.rows)).join("")}</select></label>
+    <label>${T.cols} <select id="mcols">${opt("", MATRIX.cols)}${fids.map(f => opt(f, MATRIX.cols)).join("")}</select></label></div><div id="matrix" class="scroll"></div></div>`;
+  h += `<div class="card"><h2>${T.armtable}</h2><div class="controls"><label>${T.filter} <select id="afilter">${["all", "running", "silent", "queued", "done", "failed"].map(s => `<option value="${s}" ${s === FILTER ? "selected" : ""}>${s === "all" ? T.all : T[s]}</option>`).join("")}</select></label>
+    <label>${T.search} <input type="text" id="asearch" value="${esc(SEARCH)}" placeholder="id / level"></label></div><div id="armtable" class="scroll"></div></div>`;
   root.innerHTML = h;
   drawGantt($("gantt")); drawMatrix($("matrix")); drawArmTable($("armtable"));
   $("mrows").onchange = e => { MATRIX.rows = e.target.value; drawMatrix($("matrix")); }; $("mcols").onchange = e => { MATRIX.cols = e.target.value; drawMatrix($("matrix")); };
-  $("afilter").onchange = e => { FILTER = e.target.value; drawArmTable($("armtable")); };
+  $("afilter").onchange = e => { FILTER = e.target.value; drawArmTable($("armtable")); }; $("asearch").oninput = e => { SEARCH = e.target.value; drawArmTable($("armtable")); };
 }
 function drawGantt(el) {
   const { sched, now } = C, phases = D.phases || []; if (!phases.length) { el.innerHTML = `<span class="small">${T.none}</span>`; return; }
-  const t0 = Math.min(sched.t0, ...phases.map(p => sched.phases[p.id].start)), t1 = Math.max(now, ...phases.map(p => sched.phases[p.id].end)) + 60;
-  const W = 1000, L_ = 190, R = 210, rowH = 30, H = phases.length * rowH + 34;
+  const starts = fin(phases.map(p => sched.phases[p.id].start)), ends = fin(phases.map(p => sched.phases[p.id].end));
+  const t0 = Math.min(sched.t0, ...starts), t1 = Math.max(now, ...ends, t0 + 600) + 60;
+  const W = 1000, L_ = Math.min(260, 60 + 7.5 * Math.max(...phases.map(p => p.name.length))), R = 220, rowH = 30, H = phases.length * rowH + 34;
   const X = t => L_ + (t - t0) / Math.max(t1 - t0, 1) * (W - L_ - R);
-  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--run)" opacity=".45"/></pattern></defs>`;
-  const span = t1 - t0, step = span > 86400 * 2 ? 86400 : span > 6 * 3600 ? 3600 * 2 : span > 2 * 3600 ? 3600 : span > 1800 ? 600 : 300;
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--run)" opacity=".45"/></pattern>
+    <pattern id="hatchw" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="6" fill="var(--warn)" opacity=".5"/></pattern></defs>`;
+  const span = t1 - t0; let step = span > 86400 * 2 ? 86400 : span > 6 * 3600 ? 7200 : span > 2 * 3600 ? 3600 : span > 1800 ? 600 : 300; while (span / step > 14) step *= 2;
   for (let t = Math.ceil(t0 / step) * step; t <= t1; t += step) s += `<line x1="${X(t)}" x2="${X(t)}" y1="6" y2="${H - 24}" class="axis"/><text x="${X(t)}" y="${H - 8}" text-anchor="middle">${fmtT(t)}</text>`;
   phases.forEach((p, i) => { const e = sched.phases[p.id], y = 10 + i * rowH; const col = p.status === "done" ? "var(--good)" : p.status === "running" ? "var(--run)" : "var(--muted)";
-    s += `<text x="${L_ - 8}" y="${y + 14}" text-anchor="end" style="fill:var(--ink);font-weight:600">${esc(p.name)}</text>`;
-    const obsEnd = p.status === "done" ? e.end : (e.estStart ? null : Math.min(now, e.end));
-    if (!e.estStart && obsEnd) s += `<rect x="${X(e.start)}" y="${y}" width="${Math.max(2, X(obsEnd) - X(e.start))}" height="20" rx="4" fill="${col}" opacity=".85"/>`;
-    if (p.status !== "done") { const a = e.estStart ? e.start : Math.max(now, e.start); if (e.end > a) s += `<rect x="${X(a)}" y="${y}" width="${Math.max(2, X(e.end) - X(a))}" height="20" rx="4" fill="url(#hatch)" stroke="var(--run)" stroke-opacity=".5"/>`; }
-    const lbl = p.kind === "arms" ? `${p.n_done}/${p.n}` : T[p.status]; s += `<text x="${X(e.end) + 6}" y="${y + 14}">${lbl}${p.status !== "done" ? ` · ${T.left} ${fmtDur(e.end - now)}` : ""}</text>`; });
+    s += `<text x="${L_ - 8}" y="${y + 14}" text-anchor="end" style="fill:var(--ink);font-weight:600">${esc(p.name.length > 30 ? p.name.slice(0, 29) + "…" : p.name)}</text>`;
+    const obsEnd = p.status === "done" ? e.end : (e.estStart ? null : Math.min(now, e.end || now));
+    if (!e.estStart && obsEnd) s += `<rect x="${X(e.start)}" y="${y}" width="${Math.max(2, X(obsEnd) - X(e.start))}" height="20" rx="4" fill="${e.overdue ? "var(--warn)" : col}" opacity=".85"/>`;
+    if (p.status !== "done") { const a = e.estStart ? e.start : Math.max(now, e.start);
+      if (e.unknown && !e.end) s += `<rect x="${X(a)}" y="${y}" width="${Math.max(2, X(Math.min(t1, a + span * 0.08)) - X(a))}" height="20" rx="4" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+      else if (e.end > a) s += `<rect x="${X(a)}" y="${y}" width="${Math.max(2, X(e.end) - X(a))}" height="20" rx="4" fill="url(#${e.overdue ? "hatchw" : "hatch"})" stroke="var(--${e.overdue ? "warn" : "run"})" stroke-opacity=".5"/>`; }
+    const lbl = (p.kind === "arms" ? `${p.n_done}/${p.n}` : T[p.status] || p.status) + (p.status !== "done" ? (e.overdue ? ` · ${T.overdue} ${fmtDur(e.overdue)}` : e.end ? ` · ${T.left} ${fmtDur(e.end - now)}` : ` · ETA ${T.unknown}`) : "");
+    s += `<text x="${X(e.end || e.start) + 6}" y="${y + 14}" style="${e.overdue ? "fill:var(--warn);font-weight:600" : ""}">${esc(lbl)}</text>`; });
   s += `<line x1="${X(now)}" x2="${X(now)}" y1="4" y2="${H - 22}" stroke="var(--bad)" stroke-width="1.5"/><text x="${X(now) + 4}" y="${H - 26}" style="fill:var(--bad)">now</text></svg>`;
   el.innerHTML = s;
 }
+function primaryScalar() { const pm = C.metrics[0]; return C.scalars.find(s => s.derive && (s.derive.how === "best" || s.derive.how === "last") && pm && s.derive.metric === pm.id) || C.scalars.find(s => s.derive && (s.derive.how === "best" || s.derive.how === "last")) || C.scalars[0] || null; }
 function drawMatrix(el) {
-  const { arms, factors, F, now, P, metrics } = C; const rf = F[MATRIX.rows], cf = F[MATRIX.cols]; if (!rf || !cf) { el.innerHTML = ""; return; }
-  const pm = metrics[0]; const fs = C.scalars.find(s => s.derive && s.derive.how === "best" && pm && s.derive.metric === pm.id);
-  let h = `<table><tr><th>${esc(rf.label || rf.id)} \\ ${esc(cf.label || cf.id)}</th>${cf.levels.map(l => `<th style="color:${C.color(cf.id, l.id)}">${esc(l.label || l.id)}</th>`).join("")}</tr>`;
+  const { arms, factors, F, now, P } = C; const rf = F[MATRIX.rows], cf = F[MATRIX.cols]; if (!rf) { el.innerHTML = ""; return; }
+  const fs = primaryScalar(); const cols = cf ? cf.levels : [{ id: "_all", label: T.all }];
+  let h = `<table><tr><th>${esc(rf.label || rf.id)}${cf ? " \\ " + esc(cf.label || cf.id) : ""}</th>${cols.map(l => `<th style="color:${cf ? C.color(cf.id, l.id) : "inherit"}">${esc(l.label || l.id)}</th>`).join("")}</tr>`;
   for (const rl of rf.levels) { h += `<tr><td><b>${esc(rl.label || rl.id)}</b></td>`;
-    for (const cl of cf.levels) { const cell = arms.filter(a => a.factors[rf.id] === rl.id && a.factors[cf.id] === cl.id); if (!cell.length) { h += "<td></td>"; continue; }
-      const others = factors.filter(f => f.id !== rf.id && f.id !== cf.id);
-      h += `<td>${cell.map(a => { const lbl = a.progress ? Math.round(100 * a.progress.step / a.progress.total) + "%" : (a.status === "running" && a.start && (a.budget_min || P.budget_min) ? Math.min(99, Math.round(100 * (now - a.start) / 60 / (a.budget_min || P.budget_min))) + "%" : others.map(f => a.factors[f.id]).join("/") || "•");
-        return `<span class="seed ${a.status}" data-arm="${esc(a.id)}" title="${esc(a.id)} · ${T[a.status] || a.status}${fs && a.s[fs.id] != null ? ` · ${fmtNum(a.s[fs.id], fs.unit)}` : ""}">${esc(lbl)}</span>`; }).join("")}
+    for (const cl of cols) { const cell = arms.filter(a => a.factors[rf.id] === rl.id && (!cf || a.factors[cf.id] === cl.id)); if (!cell.length) { h += "<td></td>"; continue; }
+      const others = factors.filter(f => f.id !== rf.id && (!cf || f.id !== cf.id));
+      h += `<td>${cell.map(a => { const e = C.sched.est[a.id] || {}; const pct = a.progress ? Math.round(100 * a.progress.step / a.progress.total) : (a.status === "running" && a.start && (a.budget_min || P.budget_min) ? Math.min(99, Math.round(100 * (now - a.start) / 60 / (a.budget_min || P.budget_min))) : null);
+        const lbl = others.map(f => a.factors[f.id]).join("/") || "•";
+        const tip = `${a.id} · ${T[a.status] || a.status}${a.auto_closed ? " (" + T.auto + ")" : ""}${pct != null ? ` · ${pct}%` : ""}${fs && a.s[fs.id] != null ? ` · ${fmtNum(a.s[fs.id], fs.unit)}` : ""}${e.end && !FINISHED.includes(a.status) ? ` · ETA ${fmtT(e.end)}` : ""}`;
+        return `<span class="seed ${cls(a.status)} ${a.auto_closed ? "auto" : ""}" data-arm="${esc(a.id)}" title="${esc(tip)}">${esc(lbl)}${pct != null && a.status === "running" ? `<span style="font-weight:400;opacity:.8">·${pct}%</span>` : ""}</span>`; }).join("")}
         ${fs ? `<div class="small">${fmtNum(median(cell.map(a => a.s[fs.id])), fs.unit)}${cell.some(a => a.provisional && a.s[fs.id] != null) ? "*" : ""}</div>` : ""}</td>`; }
     h += "</tr>"; }
   el.innerHTML = h + "</table>"; el.querySelectorAll(".seed").forEach(s => s.onclick = () => showArm(s.dataset.arm));
 }
 function drawArmTable(el) {
-  const { arms, factors, now, metrics } = C; const pm = metrics[0]; const fs = C.scalars.find(s => s.derive && s.derive.how === "best" && pm && s.derive.metric === pm.id);
-  const cols = [["id", "id", a => a.id], ...factors.map(f => [f.id, f.label || f.id, a => a.factors[f.id]]), ["status", T.status, a => a.status], ["phase", T.phase, a => a.phase], ["start", T.start, a => a.start], ["elapsed", T.dur, a => a.elapsed_min],
-    ["progress", "%", a => a.progress ? a.progress.step / a.progress.total : null], ...(fs ? [[fs.id, fs.label || fs.id, a => a.s[fs.id]]] : []), ["n_records", T.t_evals, a => a.s.n_records], ["last", "last event", a => a.last_event ? now - a.last_event : null]];
-  let rows = arms.filter(a => FILTER === "all" || a.status === FILTER || (FILTER === "failed" && a.status === "killed"));
+  const { arms, factors, now } = C; const fs = primaryScalar();
+  const cols = [["id", "id", a => a.id], ...factors.map(f => [f.id, f.label || f.id, a => a.factors[f.id]]), ["status", T.status, a => a.status], ["phase", T.phase, a => a.phase], ["start", T.start, a => a.start],
+    ["elapsed", T.dur, a => a.elapsed_min], ["eta", "ETA", a => (C.sched.est[a.id] || {}).end], ["progress", "%", a => a.progress ? a.progress.step / a.progress.total : null],
+    ...(fs ? [[fs.id, fs.label || fs.id, a => a.s[fs.id]]] : []), ["n_records", T.t_evals, a => a.s.n_records], ["last", "last event", a => a.last_event ? now - a.last_event : null]];
+  const q = SEARCH.trim().toLowerCase();
+  let rows = arms.filter(a => (FILTER === "all" || a.status === FILTER || (FILTER === "failed" && a.status === "killed")) && (!q || a.id.toLowerCase().includes(q) || Object.values(a.factors).some(v => String(v).toLowerCase().includes(q)) || factors.some(f => C.label(f.id, a.factors[f.id]).toLowerCase().includes(q))));
   const col = cols.find(c => c[0] === SORT.key) || cols[0];
   rows = rows.slice().sort((a, b) => { const x = col[2](a), y = col[2](b); if (x == null) return 1; if (y == null) return -1; return (x < y ? -1 : x > y ? 1 : 0) * SORT.dir; });
-  let h = `<table><tr>${cols.map(c => `<th data-k="${c[0]}" class="${SORT.key === c[0] ? "sorted" : ""}">${esc(c[1])}${SORT.key === c[0] ? (SORT.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr>`;
-  for (const a of rows) h += `<tr class="row" data-arm="${esc(a.id)}"><td>${esc(a.id)}</td>${factors.map(f => `<td>${esc(C.label(f.id, a.factors[f.id]))}</td>`).join("")}<td>${stChip(a.status)}</td><td class="small">${esc(a.phase || "")}</td><td>${fmtT(a.start)}</td><td class="num">${a.elapsed_min != null ? fmtDur(a.elapsed_min * 60) : "—"}</td>
-    <td class="num">${a.progress ? Math.round(100 * a.progress.step / a.progress.total) + "%" : ""}</td>${fs ? `<td class="num">${fmtNum(a.s[fs.id], fs.unit)}${a.provisional && a.s[fs.id] != null ? "*" : ""}</td>` : ""}<td class="num">${a.s.n_records ?? ""}</td><td class="num ${a.status === "silent" ? "chip silent" : ""}">${a.last_event ? fmtDur(now - a.last_event) : "—"}</td></tr>`;
-  el.innerHTML = h + `</table><div class="small" style="margin-top:4px">${T.provisional}</div>`;
-  el.querySelectorAll("th").forEach(t => t.onclick = () => { SORT = { key: t.dataset.k, dir: SORT.key === t.dataset.k ? -SORT.dir : 1 }; drawArmTable(el); });
+  let h = `<table><tr>${cols.map(c => `<th class="sortable ${SORT.key === c[0] ? "sorted" : ""}" data-k="${esc(c[0])}">${esc(c[1])}${SORT.key === c[0] ? (SORT.dir > 0 ? " ▲" : " ▼") : ""}</th>`).join("")}</tr>`;
+  for (const a of rows) { const e = C.sched.est[a.id] || {};
+    h += `<tr class="row" data-arm="${esc(a.id)}"><td>${esc(a.id)}</td>${factors.map(f => `<td>${esc(C.label(f.id, a.factors[f.id]))}</td>`).join("")}<td>${stChip(a.status, a.auto_closed)}</td><td class="small">${esc(a.phase || "")}</td><td>${fmtT(a.start)}</td><td class="num">${a.elapsed_min != null ? fmtDur(a.elapsed_min * 60) : "—"}</td>
+    <td class="num ${e.overdue ? "overdue" : "est"}">${FINISHED.includes(a.status) ? "—" : e.end ? fmtT(e.end) + (e.overdue ? " !" : "") : T.unknown}</td><td class="num">${a.progress ? Math.round(100 * a.progress.step / a.progress.total) + "%" : ""}</td>${fs ? `<td class="num">${fmtNum(a.s[fs.id], fs.unit)}${a.provisional && a.s[fs.id] != null ? "*" : ""}</td>` : ""}<td class="num">${a.s.n_records ?? ""}</td><td class="num">${a.status === "silent" ? `<span class="chip silent">${fmtDur(now - a.last_event)}</span>` : a.last_event ? fmtDur(now - a.last_event) : "—"}</td></tr>`; }
+  el.innerHTML = h + `</table><div class="small" style="margin-top:4px">${rows.length}/${arms.length} · ${T.provisional}</div>`;
+  el.querySelectorAll("th.sortable").forEach(t => t.onclick = () => { SORT = { key: t.dataset.k, dir: SORT.key === t.dataset.k ? -SORT.dir : 1 }; drawArmTable(el); });
   el.querySelectorAll("tr.row").forEach(r => r.onclick = () => showArm(r.dataset.arm));
 }
 
 // ---------------------------------------------------------------- tab: results & explore
-function rResults(root) { root.innerHTML = `<div class="small" style="margin-bottom:6px">${T.enlarge} · ${T.provisional}</div><div class="plots" id="res-plots"></div>`; (C.P.plots || []).forEach(s => drawPlot(s, $("res-plots"))); }
+function rResults(root) { root.innerHTML = `<div class="small" style="margin-bottom:6px">${T.enlarge} · ${T.provisional}</div><div class="plots" id="res-plots"></div>`; (C.P.plots || []).forEach(s => $("res-plots").appendChild(drawPlot(s))); }
+function exploreFromHash() { const h = new URLSearchParams(location.hash.slice(1)); const { metrics, xaxes, scalars, factors } = C;
+  const type = h.get("type") || (metrics.length ? "curve" : scalars.length ? "bar" : "curve");
+  return { type, y: h.get("y") || "", x: h.get("x") || "", group: h.get("group") ?? ((factors[0] || {}).id || ""), facet: h.get("facet") ?? ((factors[1] || {}).id || ""), agg: h.get("agg") || "", logy: h.get("logy") === "1", logx: h.get("logx") === "1" }; }
 function rExplore(root) {
-  const { metrics, xaxes, scalars, factors } = C; const h0 = new URLSearchParams(location.hash.slice(1));
-  EXPL = EXPL || { type: h0.get("type") || "curve", y: h0.get("y") || (metrics[0] || {}).id, x: h0.get("x") || (xaxes[0] || {}).id, group: h0.get("group") || (factors[0] || {}).id || "", facet: h0.get("facet") || (factors[1] || {}).id || "", agg: h0.get("agg") || "median_iqr", logy: h0.get("logy") === "1", logx: h0.get("logx") === "1" };
-  const isCurve = EXPL.type === "curve"; const ys = isCurve ? metrics : scalars, xs = isCurve ? xaxes : scalars;
-  if (!ys.find(m => m.id === EXPL.y)) EXPL.y = (ys[0] || {}).id; if (!xs.find(m => m.id === EXPL.x)) EXPL.x = (xs[0] || {}).id;
-  const sel = (id, opts, val, none) => `<select id="${id}">${none ? `<option value="" ${!val ? "selected" : ""}>—</option>` : ""}${opts.map(o => `<option value="${esc(o.id)}" ${o.id === val ? "selected" : ""}>${esc(o.label || o.id)}</option>`).join("")}</select>`;
-  const aggs = isCurve ? ["median_iqr", "mean_sd", "lanes"] : ["median", "mean"];
-  root.innerHTML = `<div class="card"><div class="controls"><label>${T.type} ${sel("e-type", ["curve", "bar", "box", "scatter", "cdf", "heatmap"].map(t => ({ id: t })), EXPL.type)}</label>
-    <label>${T.y} ${sel("e-y", ys, EXPL.y)}</label>${isCurve || EXPL.type === "scatter" ? `<label>${T.x} ${sel("e-x", xs, EXPL.x)}</label>` : ""}
+  const { metrics, xaxes, scalars, factors } = C; EXPL = EXPL || exploreFromHash();
+  const isCurve = EXPL.type === "curve", isScatter = EXPL.type === "scatter"; const ys = isCurve ? metrics : scalars, xs = isCurve ? xaxes : scalars;
+  if (!ys.find(m => m.id === EXPL.y)) EXPL.y = (ys[0] || {}).id || ""; if (!xs.find(m => m.id === EXPL.x)) EXPL.x = (xs[0] || {}).id || "";
+  const aggs = isCurve ? ["median_iqr", "mean_sd", "lanes"] : ["median", "mean"]; if (!aggs.includes(EXPL.agg)) EXPL.agg = aggs[0];
+  const sel = (id, opts, val, none) => `<select id="${id}">${none ? `<option value="" ${!val ? "selected" : ""}>${T.none_}</option>` : ""}${opts.map(o => `<option value="${esc(o.id)}" ${o.id === val ? "selected" : ""}>${esc(o.label || o.id)}</option>`).join("")}</select>`;
+  root.innerHTML = `<div class="card"><div class="controls"><label>${T.type} ${sel("e-type", ["curve", "bar", "box", "scatter", "cdf", "heatmap", "table"].map(t => ({ id: t })), EXPL.type)}</label>
+    <label>${T.y} ${sel("e-y", ys, EXPL.y)}</label>${isCurve || isScatter ? `<label>${T.x} ${sel("e-x", xs, EXPL.x)}</label>` : ""}
     <label>${T.group} ${sel("e-group", factors, EXPL.group, true)}</label><label>${T.facet} ${sel("e-facet", factors, EXPL.facet, true)}</label>
-    ${EXPL.type !== "scatter" ? `<label>${T.agg} ${sel("e-agg", aggs.map(a => ({ id: a, label: T[a] || a })), aggs.includes(EXPL.agg) ? EXPL.agg : aggs[0])}</label>` : ""}
-    <label><input type="checkbox" id="e-logy" ${EXPL.logy ? "checked" : ""}> ${T.logy}</label>${isCurve || EXPL.type === "scatter" ? `<label><input type="checkbox" id="e-logx" ${EXPL.logx ? "checked" : ""}> ${T.logx}</label>` : ""}</div>
+    ${!isScatter ? `<label>${T.agg} ${sel("e-agg", aggs.map(a => ({ id: a, label: T[a] || a })), EXPL.agg)}</label>` : ""}
+    <label><input type="checkbox" id="e-logy" ${EXPL.logy ? "checked" : ""}> ${T.logy}</label>${isCurve || isScatter ? `<label><input type="checkbox" id="e-logx" ${EXPL.logx ? "checked" : ""}> ${T.logx}</label>` : ""}</div>
     <div class="small">${T.explore_note}</div></div><div class="plots" id="ex-plot" style="grid-template-columns:1fr"></div>`;
-  const spec = { id: "explore", type: EXPL.type, title: `${(ys.find(m => m.id === EXPL.y) || {}).label || EXPL.y}${isCurve || EXPL.type === "scatter" ? " vs " + ((xs.find(m => m.id === EXPL.x) || {}).label || EXPL.x) : ""}`, y: EXPL.y, x: EXPL.x, value: EXPL.y,
-    group: EXPL.group || null, color: EXPL.group || null, facet: EXPL.facet || null, rows: EXPL.facet || (factors[1] || {}).id, cols: EXPL.group || (factors[0] || {}).id, agg: EXPL.agg, logy: EXPL.logy, logx: EXPL.logx, big: true, ref: isCurve ? "baseline_final" : null };
-  drawPlot(spec, $("ex-plot"), { big: true });
+  if (!ys.length) { $("ex-plot").innerHTML = `<div class="card small">${T.none}</div>`; }
+  else { const yl = (ys.find(m => m.id === EXPL.y) || {}).label || EXPL.y, xl = (xs.find(m => m.id === EXPL.x) || {}).label || EXPL.x;
+    const spec = { id: "explore", type: EXPL.type, title: `${yl}${isCurve || isScatter ? " vs " + xl : ""}`, y: EXPL.y, x: EXPL.x, value: EXPL.y, values: [EXPL.y], group: EXPL.group || null, color: EXPL.group || null, facet: EXPL.facet || null,
+      rows: EXPL.facet || EXPL.group || (factors[0] || {}).id, cols: EXPL.facet ? (EXPL.group || null) : null, agg: EXPL.agg, logy: EXPL.logy, logx: EXPL.logx, big: true, ref: isCurve ? "baseline_final" : null, normalize: "row_best" };
+    if (spec.type === "heatmap" || spec.type === "table") spec.facet = null;
+    $("ex-plot").appendChild(drawPlot(spec, { big: true })); }
   const upd = () => { EXPL = { type: $("e-type").value, y: $("e-y").value, x: $("e-x") ? $("e-x").value : EXPL.x, group: $("e-group").value, facet: $("e-facet").value, agg: $("e-agg") ? $("e-agg").value : EXPL.agg, logy: $("e-logy").checked, logx: $("e-logx") ? $("e-logx").checked : false };
-    const h = new URLSearchParams(location.hash.slice(1)); h.set("tab", "explore"); for (const [k, v] of Object.entries(EXPL)) h.set(k, typeof v === "boolean" ? (v ? "1" : "0") : v || ""); location.hash = h.toString(); rExplore(root); };
+    setHash(Object.assign({ tab: "explore" }, Object.fromEntries(Object.entries(EXPL).map(([k, v]) => [k, typeof v === "boolean" ? (v ? "1" : "0") : v])))); rExplore(root); };
   root.querySelectorAll("select,input").forEach(e => e.onchange = upd);
 }
 
@@ -387,184 +491,218 @@ function rExplore(root) {
 function rOps(root) {
   const d = D, { arms, now } = C, R = d.resources || {}; let rh = "";
   if (R.gpus && R.gpus.length) rh += `<div class="gpus">${R.gpus.map(g => `<div class="gpu" title="GPU ${g.id}: ${g.util}% · ${g.mem_mib}/${g.mem_total_mib || "?"} MiB"><div class="fill" style="height:${g.util}%"></div><span>${g.id}: ${g.util}%</span></div>`).join("")}</div>`;
-  if (R.cores) { const n = R.n_cores || 64, tags = [...new Set(Object.values(R.cores))], tc = Object.fromEntries(tags.map((t, i) => [t, PALETTE[i % PALETTE.length]]));
+  if (R.cores && Object.keys(R.cores).length) { const n = R.n_cores || 64, tags = [...new Set(Object.values(R.cores))], tc = Object.fromEntries(tags.map((t, i) => [t, PALETTE[i % PALETTE.length]]));
     rh += `<div class="coremap" style="margin-top:8px">${Array.from({ length: n }, (_, c) => { const tag = R.cores[String(c)]; return `<div class="cell" title="${T.core} ${c}${tag ? " · " + esc(tag) : ""}" style="background:${tag ? tc[tag] : "var(--surface-2)"};color:${tag ? "#fff" : "var(--muted)"}">${tag ? esc(tag.slice(0, 7)) : c}</div>`; }).join("")}</div>`; }
   const meta = [R.load != null ? `${T.load} ${R.load}${R.ncpu ? "/" + R.ncpu : ""}` : null, R.disk_free_gb != null ? `${T.disk} ${R.disk_free_gb} GB${R.disk_pct_used != null ? ` (${R.disk_pct_used}% used)` : ""}` : null].filter(Boolean);
   if (meta.length) rh += `<div class="small" style="margin-top:8px;${R.disk_pct_used > 90 ? "color:var(--bad);font-weight:650" : ""}">${meta.join(" · ")}</div>`;
-  const A = d.anchors || [], silent = arms.filter(a => a.status === "silent");
-  let h = `<div class="grid2"><div class="card"><h2>${T.resources}</h2>${rh || `<span class="small">${T.none}</span>`}</div>
+  const A = d.anchors || [], silent = arms.filter(a => a.status === "silent"), autoc = arms.filter(a => a.auto_closed);
+  let h = "";
+  if ((d.plan_warnings || []).length || Object.keys(d.adapter_errors || {}).length) h += `<div class="warnbox"><b>${T.plan_warn}</b><ul style="margin:4px 0 4px 18px">${(d.plan_warnings || []).map(w => `<li>${esc(w)}</li>`).join("")}</ul>${Object.keys(d.adapter_errors || {}).length ? `<b>${T.adapter_err}</b><ul style="margin:4px 0 0 18px">${Object.entries(d.adapter_errors).map(([k, v]) => `<li><code>${esc(k)}</code>: ${esc(v)}</li>`).join("")}</ul>` : ""}</div>`;
+  h += `<div class="grid2"><div class="card"><h2>${T.resources}</h2>${rh || `<span class="small">${T.none}</span>`}</div>
     <div class="card"><h2>${T.anchors}</h2>${A.length ? `<table><tr><th>anchor</th><th class="num">ref</th><th class="num">latest</th><th class="num">n</th><th class="num">drift</th><th></th></tr>${A.map(a => `<tr><td>${esc(a.name)}</td><td class="num">${fmtNum(a.ref, a.unit)}</td><td class="num">${fmtNum(a.latest, a.unit)}</td><td class="num">${a.n}</td><td class="num" style="${a.ok === false ? "color:var(--bad);font-weight:650" : ""}">${a.drift_pct == null ? "—" : (a.drift_pct > 0 ? "+" : "") + a.drift_pct + "%"}</td><td>${a.ok == null ? "" : chip(a.ok ? "ok" : "drift", a.ok ? "pass" : "fail")}</td></tr>`).join("")}</table>` : `<span class="small">${T.none}</span>`}</div></div>`;
-  h += `<div class="grid2"><div class="card"><h2>${T.incidents}</h2>${(d.incidents || []).length ? d.incidents.slice().reverse().map(i => `<div class="inc ${i.severity || "warn"}"><time>${i.t ? fmtT(i.t) : ""}</time>${esc(i.text)}</div>`).join("") : `<span class="small">${T.none}</span>`}
-    <h2 style="margin-top:12px">${T.silent_arms}</h2>${silent.length ? silent.map(a => `<div class="small"><span class="chip silent">${esc(a.id)}</span> last event ${fmtDur(now - a.last_event)} ${T.ago} · <span style="font-family:monospace">${esc(a.src || "")}</span></div>`).join("") : `<span class="small">${T.none}</span>`}</div>
-    <div class="card"><h2>${T.log}</h2><pre class="log">${(d.log || []).slice(-80).reverse().map(l => (l.t ? fmtT(l.t) + "  " : "") + esc(l.text)).join("\n") || "—"}</pre></div></div>`;
+  h += `<div class="grid2"><div class="card"><h2>${T.incidents}</h2>${(d.incidents || []).length ? d.incidents.slice().reverse().map(i => `<div class="inc ${cls(i.severity || "warn")}"><time>${i.t ? fmtT(i.t) : ""}</time>${esc(i.text)}</div>`).join("") : `<span class="small">${T.none}</span>`}
+    <h2 style="margin-top:12px">${T.silent_arms} / ${T.auto}</h2>${silent.concat(autoc).length ? silent.map(a => `<div class="small"><span class="chip silent">${esc(a.id)}</span> last event ${fmtDur(now - a.last_event)} ${T.ago} · <span style="font-family:monospace">${esc(a.src || "")}</span></div>`).join("") + autoc.map(a => `<div class="small"><span class="chip done auto">${esc(a.id)}</span> ${esc(a.note || "")}</div>`).join("") : `<span class="small">${T.none}</span>`}</div>
+    <div class="card"><h2>${T.log}</h2><pre class="log">${logLines((d.log || []).slice(-120).reverse())}</pre></div></div>`;
   h += `<div class="card"><h2>${T.collector}</h2><div class="kv"><span class="k">host</span><span>${esc(d.host || "")}</span><span class="k">heartbeat</span><span>${fmtT(d.updated)} (${fmtDur(now - d.updated)} ${T.ago})</span><span class="k">interval</span><span>${d.collector_interval_s} s</span><span class="k">schema</span><span>${esc(d.schema)}</span><span class="k">sample src</span><span style="font-family:monospace">${esc((arms[0] || {}).src || "")}</span></div></div>`;
   root.innerHTML = h;
 }
 
 // ---------------------------------------------------------------- arm drawer
 function showArm(id) {
-  const a = C.arms.find(a => a.id === id); if (!a) return; const { now, factors, scalars, metrics } = C;
-  let h = `<h2>${T.detail}: ${esc(a.id)} ${stChip(a.status)}</h2><div class="grid2"><div><div class="kv">${factors.map(f => `<span class="k">${esc(f.label || f.id)}</span><span>${esc(C.label(f.id, a.factors[f.id]))}</span>`).join("")}
-    <span class="k">${T.phase}</span><span>${esc(a.phase || "")}</span><span class="k">${T.start}</span><span>${fmtT(a.start)}</span><span class="k">${T.end}</span><span>${fmtT(a.end)}</span><span class="k">${T.dur}</span><span>${a.elapsed_min != null ? fmtDur(a.elapsed_min * 60) : "—"}${a.budget_min ? ` / ${a.budget_min} min` : ""}</span>
+  const a = C.arms.find(a => a.id === id); if (!a) return; const { now, factors, scalars, metrics } = C; const e = C.sched.est[a.id] || {};
+  let h = `<h2>${T.detail}: ${esc(a.id)} ${stChip(a.status, a.auto_closed)}</h2><div class="grid2"><div><div class="kv">${factors.map(f => `<span class="k">${esc(f.label || f.id)}</span><span>${esc(C.label(f.id, a.factors[f.id]))}</span>`).join("")}
+    <span class="k">${T.phase}</span><span>${esc(a.phase || "")}</span><span class="k">${T.start}</span><span>${fmtT(a.start)}</span><span class="k">${T.end}</span><span>${fmtT(a.end)}${!FINISHED.includes(a.status) && e.end ? ` <span class="est">(ETA ${fmtT(e.end)}${e.basis ? ", " + e.basis : ""})</span>` : ""}</span><span class="k">${T.dur}</span><span>${a.elapsed_min != null ? fmtDur(a.elapsed_min * 60) : "—"}${a.budget_min ? ` / ${a.budget_min} min` : ""}</span>
     ${a.progress ? `<span class="k">progress</span><span>${a.progress.step}/${a.progress.total}</span>` : ""}<span class="k">last event</span><span>${a.last_event ? fmtDur(now - a.last_event) + " " + T.ago : "—"}</span>${a.note ? `<span class="k">note</span><span>${esc(a.note)}</span>` : ""}<span class="k">${T.src}</span><span style="font-family:monospace;font-size:11px">${esc(a.src || "")}</span></div>
-    <h3 style="margin-top:10px">scalars</h3><table>${scalars.map(s => `<tr><td>${esc(s.label || s.id)}</td><td class="num">${fmtNum(a.s[s.id], s.unit)}${a.provisional && s.derive && s.derive.how === "best" && a.s[s.id] != null ? "*" : ""}</td></tr>`).join("")}${Object.entries(a.s).filter(([k]) => !C.S[k]).map(([k, v]) => `<tr><td class="small">${esc(k)}</td><td class="num small">${fmtNum(v)}</td></tr>`).join("")}</table></div>
+    <h3 style="margin-top:10px">scalars</h3><table>${scalars.map(s => `<tr><td>${esc(s.label || s.id)}</td><td class="num">${fmtNum(a.s[s.id], s.unit)}${a.provisional && s.derive && a.s[s.id] != null ? "*" : ""}</td></tr>`).join("")}${Object.entries(a.s).filter(([k]) => !C.S[k]).map(([k, v]) => `<tr><td class="small">${esc(k)}</td><td class="num small">${fmtNum(v)}</td></tr>`).join("")}</table></div>
     <div><div class="plots" id="arm-plots" style="grid-template-columns:1fr"></div><h3 style="margin-top:8px">${T.records}</h3><pre class="log">${(a.tail || []).map(r => esc(JSON.stringify(r))).join("\n") || "—"}</pre></div></div>`;
   $("mbody").innerHTML = h; $("modal").classList.add("on");
-  for (const m of metrics) { const c = a.curves?.[m.id]?.minutes || a.curves?.[m.id]?.[Object.keys(a.curves?.[m.id] || {})[0]]; if (!c || c.length < 2) continue;
-    const xid = a.curves[m.id].minutes ? "minutes" : Object.keys(a.curves[m.id])[0];
-    drawPanelInto($("arm-plots"), { title: m.label || m.id, sub: (C.X[xid] || {}).label || xid, fmtY: v => fmtNum(v, m.unit), logy: !!m.log, xlabel: "" }, [{ name: a.id, color: "var(--accent)", data: c, kind: m.curve === "raw" ? "line" : "step" }], { W: 560, H: 220 }); }
+  for (const m of metrics) { const xs = Object.keys(a.curves?.[m.id] || {}); const xid = xs.includes("minutes") && (a.curves[m.id].minutes || []).length >= 2 ? "minutes" : xs.find(x => (a.curves[m.id][x] || []).length >= 2); if (!xid) continue;
+    const p = document.createElement("div"); p.className = "plot"; p.innerHTML = `<h3>${esc(m.label || m.id)}</h3><div class="csub">${esc((C.X[xid] || {}).label || xid)}</div>`; $("arm-plots").appendChild(p);
+    drawSeries(p, { fmtY: v => fmtNum(v, m.unit), logy: !!m.log, xlabel: (C.X[xid] || {}).label || xid }, [{ name: a.id, color: "var(--accent)", data: a.curves[m.id][xid], kind: m.curve === "raw" ? "line" : "step" }], { W: 560, H: 220 }); }
 }
 $("mx").onclick = () => $("modal").classList.remove("on"); $("modal").onclick = e => { if (e.target === $("modal")) $("modal").classList.remove("on"); };
 
 // ---------------------------------------------------------------- plot engine
-function drawPlot(spec, container, opts = {}) {
-  const { arms, factors, F, M, S, X, base, now } = C; const big = opts.big || spec.big;
-  const card = document.createElement("div"); card.className = "plot"; container.appendChild(card);
+function drawPlot(spec, opts = {}) {
+  const { arms, F, M, S, X, base, now } = C; const big = opts.big || spec.big;
+  const card = document.createElement("div"); card.className = "plot";
   const hidden = HIDDEN[spec.id] ||= new Set();
   const facetF = spec.facet && F[spec.facet]; const facets = facetF ? facetF.levels.filter(l => arms.some(a => a.factors[facetF.id] === l.id)) : [null];
-  const groupId = spec.group || spec.color; const groupF = groupId && F[groupId]; const groups = groupF ? groupF.levels : [{ id: "_all", label: "all" }];
+  const groupId = spec.group || spec.color; const groupF = groupId && F[groupId]; const groups = groupF ? groupF.levels : [{ id: "_all", label: T.all }];
   const gcolor = g => groupF ? C.color(groupF.id, g.id) : "var(--accent)";
   const type = spec.type || "curve";
-  const yKey = spec.y || spec.value || (spec.values || [])[0];
-  const yDef = type === "curve" ? M[spec.y] : (S[yKey] || M[yKey]); const xDef = type === "curve" ? X[spec.x] : S[spec.x];
-  const yUnit = (yDef || {}).unit, lower = !yDef || yDef.lower_is_better !== false, fmtY = v => fmtNum(v, yUnit);
-  const yLab = (yDef || {}).label || yKey || "";
-  const sub = type === "curve" ? `${yLab} vs ${(xDef || {}).label || spec.x} · ${T[spec.agg] || spec.agg || ""}` : type === "scatter" ? `${yLab} vs ${(xDef || {}).label || spec.x}` : type === "table" ? `${(spec.values || [yKey]).map(v => (S[v] || {}).label || v).join(" · ")}${spec.agg ? " · " + (T[spec.agg] || spec.agg) : ""}` : `${yLab}${spec.agg ? " · " + (T[spec.agg] || spec.agg) : ""}`;
+  const yKey = type === "curve" ? spec.y : (spec.y || spec.value || (spec.values || [])[0]);
+  const yDef = type === "curve" ? M[yKey] : S[yKey]; const xDef = type === "curve" ? X[spec.x] : S[spec.x];
+  const yUnit = (yDef || {}).unit, fmtY = v => fmtNum(v, yUnit), yLab = (yDef || {}).label || yKey || "";
+  const sub = type === "curve" ? `${yLab} vs ${(xDef || {}).label || spec.x} · ${T[spec.agg] || spec.agg || ""}` : type === "scatter" ? `${yLab} vs ${(xDef || {}).label || spec.x}`
+    : type === "table" ? `${(spec.values || [yKey]).map(v => (S[v] || {}).label || v).join(" · ")} · ${T[spec.agg] || spec.agg || T.median}` : `${yLab}${spec.agg ? " · " + (T[spec.agg] || spec.agg) : ""}`;
   card.innerHTML = `<h3 title="${T.enlarge}">${esc(spec.title || sub)}</h3><div class="csub">${esc(sub)}</div>`;
-  if (!big && spec.id !== "explore") card.querySelector("h3").onclick = () => { $("mbody").innerHTML = ""; drawPlot(Object.assign({}, spec, { big: true }), $("mbody"), { big: true }); $("modal").classList.add("on"); };
+  // spec errors are shown, not hidden behind "waiting for data"
+  const bad = (type === "curve" && (!M[spec.y] || !X[spec.x])) || (type === "scatter" && (!S[spec.x] || !S[spec.y])) || (["bar", "box", "cdf"].includes(type) && !S[spec.y]) || ((type === "heatmap") && !S[spec.value || spec.y]) || (spec.group && !F[spec.group]) || (spec.facet && !F[spec.facet]);
+  if (bad) { card.innerHTML += `<div class="warnbox">${T.spec_err}: ${esc(JSON.stringify({ type, y: spec.y, x: spec.x, value: spec.value, group: spec.group, facet: spec.facet }))}</div>`; return card; }
+  if (!big && spec.id !== "explore") card.querySelector("h3").onclick = () => { $("mbody").innerHTML = ""; $("mbody").appendChild(drawPlot(Object.assign({}, spec, { big: true }), { big: true })); $("modal").classList.add("on"); };
   if (groupF && type !== "heatmap" && type !== "table") { const lg = document.createElement("div"); lg.className = "legend";
-    lg.innerHTML = groups.map(g => { const n = arms.filter(a => a.factors[groupF.id] === g.id).length, nd = arms.filter(a => a.factors[groupF.id] === g.id && a.status === "done").length; return `<span class="item ${hidden.has(g.id) ? "off" : ""}" data-g="${esc(g.id)}"><span class="key" style="background:${gcolor(g)}"></span>${esc(g.label || g.id)} <span class="small">${nd}/${n}</span></span>`; }).join("") + (spec.ref && base ? `<span class="item"><span class="key" style="background:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 6px)"></span>${T.ref}</span>` : "");
-    card.appendChild(lg); lg.querySelectorAll(".item[data-g]").forEach(it => it.onclick = () => { const g = it.dataset.g; hidden.has(g) ? hidden.delete(g) : hidden.add(g); card.remove(); drawPlot(spec, container, opts); }); }
-  const panels = document.createElement("div"); panels.className = "panels"; if (facets.length === 1 || big) panels.style.gridTemplateColumns = facets.length > 1 && big ? "repeat(auto-fit,minmax(420px,1fr))" : "1fr"; card.appendChild(panels);
-  const size = big ? { W: facets.length > 1 ? 560 : 1000, H: facets.length > 1 ? 300 : 440 } : { W: 460, H: facets.length > 1 ? 210 : 240 };
+    lg.innerHTML = groups.map(g => { const n = arms.filter(a => a.factors[groupF.id] === g.id).length, nd = arms.filter(a => a.factors[groupF.id] === g.id && a.status === "done" && !a.auto_closed).length;
+      return `<span class="item ${hidden.has(g.id) ? "off" : ""}" data-g="${esc(g.id)}"><span class="key" style="background:${gcolor(g)}"></span>${esc(g.label || g.id)} <span class="small">${nd}/${n}</span></span>`; }).join("")
+      + (spec.ref && base ? `<span class="item"><span class="key" style="background:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 6px)"></span>${T.ref}</span>` : "");
+    card.appendChild(lg); lg.querySelectorAll(".item[data-g]").forEach(it => it.onclick = () => { const g = it.dataset.g; hidden.has(g) ? hidden.delete(g) : hidden.add(g); card.replaceWith(drawPlot(spec, opts)); }); }
+  const panels = document.createElement("div"); panels.className = "panels"; card.appendChild(panels);
+  const nf = facets.length; panels.style.gridTemplateColumns = nf === 1 ? "1fr" : big ? "repeat(auto-fit,minmax(420px,1fr))" : nf > 3 ? "repeat(auto-fit,minmax(260px,1fr))" : "repeat(auto-fit,minmax(200px,1fr))";
+  const size = big ? { W: nf > 1 ? 560 : 1000, H: nf > 1 ? 300 : 440 } : { W: 460, H: nf > 1 ? 210 : 240 };
   const vis = groups.filter(g => !hidden.has(g.id));
   for (const fl of facets) {
     const fa = fl ? arms.filter(a => a.factors[facetF.id] === fl.id) : arms; const inG = g => groupF ? fa.filter(a => a.factors[groupF.id] === g.id) : fa;
-    const p = document.createElement("div"); p.className = "panel"; if (fl) p.innerHTML = `<h4>${esc(fl.label || fl.id)}</h4>`; panels.appendChild(p);
-    const refVal = (spec.ref && base) ? (() => { const bs = C.scalars.find(s => s.derive && s.derive.how === "best" && s.derive.metric === (type === "curve" ? spec.y : (yDef && yDef.derive && yDef.derive.metric))) || (S[spec.y] || null); const id = type === "curve" ? (bs && bs.id) : (spec.y || spec.value);
-      return id ? median(fa.filter(a => a.factors[base.factor] === base.level && !a.provisional).map(a => a.s[id])) : null; })() : null;
-    const common = { fmtY, logy: spec.logy ?? (type === "curve" && !!(yDef || {}).log), logx: !!spec.logx, ref: refVal, xlabel: (xDef || {}).label || spec.x || "" };
+    const p = document.createElement("div"); p.className = "panel";
+    if (fl) p.innerHTML = `<h4>${esc(fl.label || fl.id)} <span class="small">${fa.filter(a => a.status === "done" && !a.auto_closed).length}/${fa.length}</span></h4>`; panels.appendChild(p);
+    const refVal = (spec.ref && base) ? (() => { const bs = type === "curve" ? C.scalars.find(s => s.derive && s.derive.how === "best" && s.derive.metric === spec.y) : S[yKey]; if (!bs) return null;
+      return median(fa.filter(a => a.factors[base.factor] === base.level && !a.provisional).map(a => a.s[bs.id])); })() : null;
+    const common = { fmtY, logy: spec.logy ?? (type === "curve" && !!(yDef || {}).log), logx: !!spec.logx, ref: refVal, xlabel: (xDef || {}).label || spec.x || "", lower: !yDef || yDef.lower_is_better !== false };
     if (type === "curve") {
-      const series = []; const xmaxHint = spec.x === "minutes" ? Math.max(0, ...fa.map(a => a.budget_min || C.P.budget_min || 0)) : 0;
-      for (const g of vis) { const lanes = inG(g).filter(a => (a.curves?.[spec.y]?.[spec.x] || []).length); const color = gcolor(g); const kind = (yDef || {}).curve === "raw" ? "line" : "step";
-        if (!lanes.length) continue;
+      const series = []; const xmaxHint = spec.x === "minutes" ? Math.max(0, ...fa.map(a => a.budget_min || C.P.budget_min || 0)) : 0; const kind = (yDef || {}).curve === "raw" ? "line" : "step";
+      for (const g of vis) { const lanes = inG(g).filter(a => (a.curves?.[spec.y]?.[spec.x] || []).length); const color = gcolor(g); if (!lanes.length) continue;
         if (spec.agg === "lanes") { lanes.forEach(a => series.push({ name: a.id, color, data: a.curves[spec.y][spec.x], thin: true, kind })); continue; }
-        const xs = [...new Set(lanes.flatMap(a => a.curves[spec.y][spec.x].map(p => p[0])))].sort((x, y) => x - y); const data = [], lo = [], hi = [];
-        for (const x of xs) { const vals = fin(lanes.map(a => stepAt(a.curves[spec.y][spec.x], x))); if (!vals.length) continue;
+        const xs = [...new Set(lanes.flatMap(a => a.curves[spec.y][spec.x].map(p => p[0])))].sort((x, y) => x - y); const data = [], lo = [], hi = [], ns = [];
+        const need = Math.max(1, Math.ceil(lanes.length / 2));
+        for (const x of xs) { const vals = fin(lanes.map(a => { const c = a.curves[spec.y][spec.x]; if (kind === "line") return lerpAt(c, x); return stepAt(c, x); })); if (vals.length < need) continue;
+          ns.push(vals.length);
           if (spec.agg === "mean_sd") { const m = mean(vals), s = sd(vals); data.push([x, m]); if (s != null) { lo.push([x, m - s]); hi.push([x, m + s]); } }
           else { data.push([x, median(vals)]); if (vals.length >= 3) { lo.push([x, quant(vals, .25)]); hi.push([x, quant(vals, .75)]); } } }
-        if (spec.x === "minutes") { const live = lanes.filter(a => a.status === "running" || a.status === "silent"); if (live.length && data.length) { const xn = Math.max(...live.map(a => (now - a.start) / 60)); if (xn > data[data.length - 1][0]) data.push([xn, data[data.length - 1][1]]); } }
-        series.push({ name: g.label || g.id, color, data, band: lo.length ? { lo, hi } : null, kind }); }
-      drawPanelInto(p, Object.assign(common, { xmaxHint }), series, size);
+        if (spec.x === "minutes" && kind === "step") { const live = lanes.filter(a => a.status === "running"); if (live.length && data.length) { const xn = Math.max(...live.map(a => (now - a.start) / 60)); if (xn > data[data.length - 1][0]) { data.push([xn, data[data.length - 1][1]]); ns.push(ns[ns.length - 1]); } } }
+        series.push({ name: g.label || g.id, color, data, band: lo.length > 1 ? { lo, hi } : null, kind, ns }); }
+      drawSeries(p, Object.assign(common, { xmaxHint }), series, size);
     } else if (type === "scatter") {
       const pts = []; for (const g of vis) for (const a of inG(g)) { const x = a.s[spec.x], y = a.s[spec.y]; if (x != null && y != null && isFinite(x) && isFinite(y)) pts.push({ x, y, color: gcolor(g), name: a.id, prov: a.provisional }); }
-      drawScatter(p, common, pts, size, fmtNum.bind(null), (xDef || {}).unit);
+      drawScatter(p, common, pts, size, (xDef || {}).unit);
     } else if (type === "bar" || type === "box") {
       const gs = vis.map(g => ({ name: g.label || g.id, color: gcolor(g), vals: fin(inG(g).map(a => a.s[spec.y])), prov: inG(g).some(a => a.provisional && a.s[spec.y] != null) }));
       drawBars(p, Object.assign(common, { box: type === "box", agg: spec.agg }), gs, size);
     } else if (type === "cdf") {
       const gs = vis.map(g => { const A = inG(g); return { name: g.label || g.id, color: gcolor(g), vals: A.map(a => a.s[spec.y]).filter(v => v != null), n: A.length }; });
-      drawCDF(p, Object.assign(common, { xlabel: (yDef || {}).label || spec.y }), gs, size);
-    } else if (type === "heatmap" || type === "table") {
-      drawHeatTable(p, spec, fa, type === "table");
-    }
+      drawCDF(p, Object.assign(common, { xlabel: yLab }), gs, size);
+    } else if (type === "heatmap" || type === "table") drawHeatTable(p, spec, fa, type === "table");
   }
   if (spec.explain) { const ex = document.createElement("div"); ex.className = "explain"; ex.textContent = spec.explain; card.appendChild(ex); }
+  return card;
 }
-// generic axes helper
+function svgIn(p, W, H) { const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.style.width = "100%"; svg.style.maxWidth = Math.round(W * 1.45) + "px"; p.appendChild(svg); return svg; }
+function emptyMsg(svg, W, H, msg) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", W / 2); t.setAttribute("y", H / 2); t.setAttribute("text-anchor", "middle"); t.textContent = msg; svg.appendChild(t); }
 function axes(svgEl, W, H, m, xr, yr, o) {
   const el = (n, attrs, txt) => { const e = document.createElementNS("http://www.w3.org/2000/svg", n); for (const k in attrs) e.setAttribute(k, attrs[k]); if (txt != null) e.textContent = txt; svgEl.appendChild(e); return e; };
   const tx = v => o.logx ? Math.log10(v) : v, ty = v => o.logy ? Math.log10(v) : v;
-  let [x0, x1] = xr.map(tx), [y0, y1] = yr.map(ty); if (x0 === x1) { x0 -= 1; x1 += 1; } if (y0 === y1) { y0 -= Math.abs(y0) * .1 || 1; y1 += Math.abs(y1) * .1 || 1; }
+  let [x0, x1] = xr.map(tx), [y0, y1] = yr.map(ty); if (!(x1 > x0)) { x0 -= 1; x1 += 1; } if (!(y1 > y0)) { y0 -= Math.abs(y0) * .1 || 1; y1 += Math.abs(y1) * .1 || 1; }
   const py = (y1 - y0) * .06; if (o.padLow !== false) y0 -= py; if (o.padHigh !== false) y1 += py;
   const X = v => m.l + (tx(v) - x0) / (x1 - x0) * (W - m.l - m.r), Y = v => m.t + (1 - (ty(v) - y0) / (y1 - y0)) * (H - m.t - m.b);
-  for (let i = 0; i <= 4; i++) { const yv = o.logy ? Math.pow(10, y0 + (y1 - y0) * i / 4) : y0 + (y1 - y0) * i / 4; el("line", { x1: m.l, x2: W - m.r, y1: Y(yv), y2: Y(yv), class: "axis" }); el("text", { x: m.l - 6, y: Y(yv) + 3.5, "text-anchor": "end" }, o.fmtY(yv)); }
-  if (o.xticks !== false) for (let i = 0; i <= 5; i++) { const xv = o.logx ? Math.pow(10, x0 + (x1 - x0) * i / 5) : x0 + (x1 - x0) * i / 5; el("text", { x: X(xv), y: H - m.b + 16, "text-anchor": i === 5 ? "end" : i === 0 ? "start" : "middle" }, (o.fmtX || (v => Math.abs(v) >= 100 ? Math.round(v) : +v.toFixed(2)))(xv)); }
+  const yt = o.logy ? ticksLog(Math.pow(10, y0), Math.pow(10, y1)) : ticksLinear(y0, y1, 4);
+  for (const yv of yt) { el("line", { x1: m.l, x2: W - m.r, y1: Y(yv), y2: Y(yv), class: "axis" }); el("text", { x: m.l - 6, y: Y(yv) + 3.5, "text-anchor": "end" }, o.fmtY(yv)); }
+  if (o.xticks !== false) { const xt = o.logx ? ticksLog(Math.pow(10, x0), Math.pow(10, x1)) : ticksLinear(x0, x1, 5); const fx = o.fmtX || (v => fmtNum(v));
+    xt.forEach((xv, i) => el("text", { x: X(xv), y: H - m.b + 16, "text-anchor": i === xt.length - 1 ? "end" : i === 0 ? "start" : "middle" }, fx(xv))); }
   if (o.xlabel) el("text", { x: (m.l + W - m.r) / 2, y: H - 5, "text-anchor": "middle", style: "fill:var(--muted);font-size:10px" }, o.xlabel);
   if (o.ref != null && isFinite(o.ref) && (!o.logy || o.ref > 0)) el("line", { x1: m.l, x2: W - m.r, y1: Y(o.ref), y2: Y(o.ref), stroke: "var(--muted)", "stroke-dasharray": "4 4" });
   return { el, X, Y };
 }
-function svgIn(p, W, H) { const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.style.width = "100%"; p.appendChild(svg); return svg; }
-function tooltipOn(svg, W, m, X0, fn) { const tt = $("tt"); const cross = document.createElementNS("http://www.w3.org/2000/svg", "line"); cross.setAttribute("y1", m.t); cross.setAttribute("y2", "100%"); cross.setAttribute("stroke", "var(--muted)"); cross.style.display = "none"; svg.appendChild(cross);
+function tooltipOn(svg, W, m, fn) { const tt = $("tt"); const cross = document.createElementNS("http://www.w3.org/2000/svg", "line"); cross.setAttribute("y1", m.t); cross.setAttribute("y2", "100%"); cross.setAttribute("stroke", "var(--muted)"); cross.style.display = "none"; svg.appendChild(cross);
   svg.addEventListener("pointermove", ev => { const r = svg.getBoundingClientRect(); const px = (ev.clientX - r.left) / r.width * W; const html = fn(px); if (!html) { tt.style.display = "none"; cross.style.display = "none"; return; }
     cross.setAttribute("x1", px); cross.setAttribute("x2", px); cross.style.display = ""; tt.style.display = "block"; tt.style.left = Math.min(window.innerWidth - 400, ev.clientX + 14) + "px"; tt.style.top = (ev.clientY - 10) + "px"; tt.innerHTML = html; });
   svg.addEventListener("pointerleave", () => { tt.style.display = "none"; cross.style.display = "none"; }); }
-function drawPanelInto(p, o, series, size) {
+function logGuard(p, o, ys) {
+  if (!o.logy) return { logy: false, ys };
+  const pos = ys.filter(v => v > 0), dropped = ys.length - pos.length;
+  if (!pos.length) { p.insertAdjacentHTML("beforeend", `<div class="note">${T.linear_fallback}</div>`); return { logy: false, ys }; }
+  if (dropped) p.insertAdjacentHTML("beforeend", `<div class="note">${T.lognote.replace("{n}", dropped)}</div>`);
+  return { logy: true, ys: pos };
+}
+function drawSeries(p, o, series, size) {
   const { W, H } = size, m = { l: 62, r: 14, t: 8, b: 46 }; const svg = svgIn(p, W, H); const withData = series.filter(s => s.data && s.data.length);
-  if (!withData.length) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", W / 2); t.setAttribute("y", H / 2); t.setAttribute("text-anchor", "middle"); t.textContent = T.waiting; svg.appendChild(t); return; }
-  const all = withData.flatMap(s => s.data.concat(s.band ? s.band.lo.concat(s.band.hi) : [])); const ys = fin(all.map(q => q[1]).concat(o.ref != null ? [o.ref] : [])).filter(v => !o.logy || v > 0), xs = fin(all.map(q => q[0])).filter(v => !o.logx || v > 0);
-  if (!ys.length) return;
-  const { el, X, Y } = axes(svg, W, H, m, [o.logx ? Math.min(...xs) : 0, Math.max(o.xmaxHint || 0, ...xs, 1e-9)], [Math.min(...ys), Math.max(...ys)], o);
-  const path = (pts, kind) => pts.map((q, i) => { const x = X(q[0]).toFixed(1), y = Y(q[1]).toFixed(1); if (!i) return `M${x} ${y}`; if (kind === "line") return `L${x} ${y}`; return `L${x} ${Y(pts[i - 1][1]).toFixed(1)}L${x} ${y}`; }).join("");
+  if (!withData.length) { emptyMsg(svg, W, H, T.waiting); return; }
+  const all = withData.flatMap(s => s.data.concat(s.band ? s.band.lo.concat(s.band.hi) : [])); const g = logGuard(p, o, fin(all.map(q => q[1]).concat(o.ref != null ? [o.ref] : [])));
+  const ys = g.ys, logy = g.logy; const xs = fin(all.map(q => q[0])).filter(v => !o.logx || v > 0); if (!ys.length || !xs.length) { emptyMsg(svg, W, H, T.waiting); return; }
+  const xmin = o.logx ? Math.min(...xs) : 0, xmax = Math.max(o.xmaxHint || 0, ...xs, 1e-9);
+  const { el, X, Y } = axes(svg, W, H, m, [xmin, xmax], [Math.min(...ys), Math.max(...ys)], Object.assign({}, o, { logy }));
+  const ok = v => v != null && isFinite(v) && (!logy || v > 0);
+  const path = (pts, kind) => { let d = "", pen = false; pts.forEach((q, i) => { if (!ok(q[1])) { pen = false; return; } const x = X(q[0]).toFixed(1), y = Y(q[1]).toFixed(1);
+    if (!pen) { d += `M${x} ${y}`; pen = true; return; } if (kind === "line") d += `L${x} ${y}`; else d += `L${x} ${Y(pts[i - 1][1]).toFixed(1)}L${x} ${y}`; }); return d; };
   for (const s of withData) {
-    if (s.band && s.band.lo.length > 1) { const up = s.band.hi, dn = s.band.lo.slice().reverse(); let d = path(up, s.kind);
+    if (s.band && s.band.lo.length > 1 && s.band.lo.every(q => ok(q[1])) && s.band.hi.every(q => ok(q[1]))) { const up = s.band.hi, dn = s.band.lo.slice().reverse(); let d = path(up, s.kind);
       dn.forEach((q, i) => { const x = X(q[0]).toFixed(1), y = Y(q[1]).toFixed(1); d += (i && s.kind !== "line" ? `L${X(dn[i - 1][0]).toFixed(1)} ${y}` : "") + `L${x} ${y}`; }); el("path", { d: d + "Z", fill: s.color, "fill-opacity": .13, stroke: "none" }); }
     el("path", { d: path(s.data, s.kind), fill: "none", stroke: s.color, "stroke-width": s.thin ? 1.2 : 2.2, "stroke-opacity": s.thin ? .7 : 1, "stroke-linejoin": "round" });
-    const last = s.data[s.data.length - 1]; el("circle", { cx: X(last[0]), cy: Y(last[1]), r: s.thin ? 2.5 : 3.5, fill: s.color }); }
-  const xmin = o.logx ? Math.min(...xs) : 0, xmax = Math.max(o.xmaxHint || 0, ...xs, 1e-9);
-  tooltipOn(svg, W, m, X, px => { const f = (px - m.l) / (W - m.l - m.r); if (f < 0 || f > 1) return null; const xv = o.logx ? Math.pow(10, Math.log10(xmin) + f * (Math.log10(xmax) - Math.log10(xmin))) : xmin + f * (xmax - xmin);
-    let h = `<div class="k">x = ${Math.abs(xv) >= 100 ? Math.round(xv) : +xv.toFixed(2)}</div>`; for (const s of withData) { const v = stepAt(s.data, xv); if (v == null) continue; h += `<div class="row"><span class="key" style="background:${s.color}"></span><span class="v">${o.fmtY(v)}</span><span class="k">${esc(s.name || "")}</span></div>`; } return h; });
+    const last = s.data.filter(q => ok(q[1])).pop(); if (last) el("circle", { cx: X(last[0]), cy: Y(last[1]), r: s.thin ? 2.5 : 3.5, fill: s.color }); }
+  tooltipOn(svg, W, m, px => { const f = (px - m.l) / (W - m.l - m.r); if (f < 0 || f > 1) return null; const xv = o.logx ? Math.pow(10, Math.log10(xmin) + f * (Math.log10(xmax) - Math.log10(xmin))) : xmin + f * (xmax - xmin);
+    let h = `<div class="k">x = ${fmtNum(xv)}</div>`; for (const s of withData) { const v = s.kind === "line" ? lerpAt(s.data, xv) : stepAt(s.data, xv); if (v == null) continue;
+      let n = null; if (s.ns) { let i = 0; while (i + 1 < s.data.length && s.data[i + 1][0] <= xv) i++; n = s.ns[i]; }
+      h += `<div class="row"><span class="key" style="background:${s.color}"></span><span class="v">${o.fmtY(v)}</span><span class="k">${esc(s.name || "")}${n != null ? ` · n=${n}` : ""}</span></div>`; } return h; });
 }
-function drawScatter(p, o, pts, size, fmt, xunit) {
+function drawScatter(p, o, pts, size, xunit) {
   const { W, H } = size, m = { l: 62, r: 14, t: 8, b: 46 }; const svg = svgIn(p, W, H);
-  if (!pts.length) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", W / 2); t.setAttribute("y", H / 2); t.setAttribute("text-anchor", "middle"); t.textContent = T.waiting; svg.appendChild(t); return; }
-  const xs = pts.map(q => q.x).filter(v => !o.logx || v > 0), ys = pts.map(q => q.y).concat(o.ref != null ? [o.ref] : []).filter(v => !o.logy || v > 0);
-  const { el, X, Y } = axes(svg, W, H, m, [Math.min(...xs), Math.max(...xs)], [Math.min(...ys), Math.max(...ys)], Object.assign({ fmtX: v => fmtNum(v, xunit) }, o));
+  if (!pts.length) { emptyMsg(svg, W, H, T.waiting); return; }
+  const g = logGuard(p, o, pts.map(q => q.y).concat(o.ref != null ? [o.ref] : [])); const logy = g.logy;
+  const use = pts.filter(q => (!logy || q.y > 0) && (!o.logx || q.x > 0)); if (!use.length) { emptyMsg(svg, W, H, T.waiting); return; }
+  const xs = use.map(q => q.x), ys = use.map(q => q.y).concat(o.ref != null && (!logy || o.ref > 0) ? [o.ref] : []);
+  const { el, X, Y } = axes(svg, W, H, m, [Math.min(...xs), Math.max(...xs)], [Math.min(...ys), Math.max(...ys)], Object.assign({ fmtX: v => fmtNum(v, xunit) }, o, { logy }));
   const tt = $("tt");
-  for (const q of pts) { const c = el("circle", { cx: X(q.x), cy: Y(q.y), r: 5, fill: q.color, "fill-opacity": q.prov ? .45 : .9, stroke: q.prov ? q.color : "none", "stroke-dasharray": q.prov ? "2 2" : "" });
-    c.addEventListener("pointerenter", ev => { tt.style.display = "block"; tt.style.left = ev.clientX + 12 + "px"; tt.style.top = ev.clientY - 10 + "px"; tt.innerHTML = `<div class="v">${esc(q.name)}</div><div class="k">x = ${fmtNum(q.x, xunit)} · y = ${o.fmtY(q.y)}${q.prov ? " *" : ""}</div>`; }); c.addEventListener("pointerleave", () => tt.style.display = "none"); }
+  for (const q of use) { const c = el("circle", { cx: X(q.x), cy: Y(q.y), r: 5, fill: q.color, "fill-opacity": q.prov ? .45 : .9, stroke: q.prov ? q.color : "none", "stroke-dasharray": q.prov ? "2 2" : "" });
+    c.addEventListener("pointerenter", ev => { tt.style.display = "block"; tt.style.left = ev.clientX + 12 + "px"; tt.style.top = ev.clientY - 10 + "px"; tt.innerHTML = `<div class="v">${esc(q.name)}</div><div class="k">x = ${fmtNum(q.x, xunit)} · y = ${o.fmtY(q.y)}${q.prov ? " *" : ""}</div>`; });
+    c.addEventListener("pointerleave", () => tt.style.display = "none"); }
 }
 function drawBars(p, o, gs, size) {
   const { W, H } = size, m = { l: 62, r: 14, t: 8, b: 46 }; const svg = svgIn(p, W, H); const have = gs.filter(g => g.vals.length);
-  if (!have.length) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", W / 2); t.setAttribute("y", H / 2); t.setAttribute("text-anchor", "middle"); t.textContent = T.waiting; svg.appendChild(t); return; }
-  const ys = gs.flatMap(g => g.vals).concat(o.ref != null ? [o.ref] : []).filter(v => !o.logy || v > 0);
-  const { el, X, Y } = axes(svg, W, H, m, [0, gs.length], [o.logy ? Math.min(...ys) : Math.min(0, ...ys), Math.max(...ys)], Object.assign({}, o, { xticks: false, logx: false, padLow: o.logy || Math.min(...ys) < 0, padHigh: true }));
-  const bw = (W - m.l - m.r) / gs.length, tt = $("tt");
-  gs.forEach((g, i) => { const cx = m.l + bw * (i + .5); el("text", { x: cx, y: H - 8, "text-anchor": "middle" }, g.name); if (!g.vals.length) return;
-    const c = o.agg === "mean" ? mean(g.vals) : median(g.vals), lo = o.box ? quant(g.vals, .25) : Math.min(...g.vals), hi = o.box ? quant(g.vals, .75) : Math.max(...g.vals);
-    const y0 = o.logy ? Y(Math.min(...ys)) : Y(0);
-    if (o.box) { el("rect", { x: cx - bw * .28, y: Y(hi), width: bw * .56, height: Math.max(1, Y(lo) - Y(hi)), fill: g.color, "fill-opacity": .25, stroke: g.color, rx: 3 }); el("line", { x1: cx - bw * .28, x2: cx + bw * .28, y1: Y(c), y2: Y(c), stroke: g.color, "stroke-width": 2.5 }); el("line", { x1: cx, x2: cx, y1: Y(Math.max(...g.vals)), y2: Y(hi), stroke: g.color }); el("line", { x1: cx, x2: cx, y1: Y(lo), y2: Y(Math.min(...g.vals)), stroke: g.color }); }
-    else { el("rect", { x: cx - bw * .3, y: Math.min(Y(c), y0), width: bw * .6, height: Math.max(1, Math.abs(y0 - Y(c))), fill: g.color, "fill-opacity": g.prov ? .45 : .8, rx: 3 }); if (g.vals.length > 1) { el("line", { x1: cx, x2: cx, y1: Y(hi), y2: Y(lo), stroke: "var(--ink)", "stroke-opacity": .5 }); } }
-    g.vals.forEach((v, j) => el("circle", { cx: cx + ((j % 5) - 2) * 3, cy: Y(v), r: 2.5, fill: "var(--ink)", "fill-opacity": .55 }));
-    el("text", { x: cx, y: Y(Math.max(...g.vals)) - 6, "text-anchor": "middle", style: "fill:var(--ink);font-weight:600" }, o.fmtY(c) + (g.prov ? "*" : ""));
+  if (!have.length) { emptyMsg(svg, W, H, T.waiting); return; }
+  const g0 = logGuard(p, o, gs.flatMap(g => g.vals).concat(o.ref != null ? [o.ref] : [])); const logy = g0.logy; const ys = g0.ys;
+  const ymin = logy ? Math.min(...ys) : (o.box ? Math.min(...ys) : Math.min(0, ...ys));
+  const { el, X, Y } = axes(svg, W, H, m, [0, gs.length], [ymin, Math.max(...ys)], Object.assign({}, o, { logy, xticks: false, logx: false, padLow: logy || o.box || ymin < 0, padHigh: true }));
+  const bw = (W - m.l - m.r) / gs.length, tt = $("tt"), narrow = bw < 70;
+  gs.forEach((g, i) => { const cx = m.l + bw * (i + .5); const name = narrow && g.name.length > 9 ? g.name.slice(0, 8) + "…" : g.name;
+    el("text", { x: cx, y: H - m.b + 16, "text-anchor": narrow ? "end" : "middle", transform: narrow ? `rotate(-25 ${cx} ${H - m.b + 16})` : "" }, name); if (!g.vals.length) return;
+    const vals = logy ? g.vals.filter(v => v > 0) : g.vals; if (!vals.length) return;
+    const c = o.agg === "mean" ? mean(vals) : median(vals), lo = o.box ? quant(vals, .25) : Math.min(...vals), hi = o.box ? quant(vals, .75) : Math.max(...vals);
+    const y0 = Y(logy ? Math.min(...ys) : Math.min(0, ymin));
+    if (o.box) { el("rect", { x: cx - bw * .28, y: Y(hi), width: bw * .56, height: Math.max(1, Y(lo) - Y(hi)), fill: g.color, "fill-opacity": .25, stroke: g.color, rx: 3 }); el("line", { x1: cx - bw * .28, x2: cx + bw * .28, y1: Y(c), y2: Y(c), stroke: g.color, "stroke-width": 2.5 });
+      el("line", { x1: cx, x2: cx, y1: Y(Math.max(...vals)), y2: Y(hi), stroke: g.color }); el("line", { x1: cx, x2: cx, y1: Y(lo), y2: Y(Math.min(...vals)), stroke: g.color }); }
+    else { el("rect", { x: cx - bw * .3, y: Math.min(Y(c), y0), width: bw * .6, height: Math.max(1, Math.abs(y0 - Y(c))), fill: g.color, "fill-opacity": g.prov ? .45 : .8, rx: 3 }); if (vals.length > 1) el("line", { x1: cx, x2: cx, y1: Y(hi), y2: Y(lo), stroke: "var(--ink)", "stroke-opacity": .5 }); }
+    vals.forEach((v, j) => el("circle", { cx: cx + ((j % 5) - 2) * 3, cy: Y(v), r: 2.5, fill: "var(--ink)", "fill-opacity": .55 }));
+    el("text", { x: cx, y: Y(Math.max(...vals)) - 6, "text-anchor": "middle", style: "fill:var(--ink);font-weight:600" }, o.fmtY(c) + (g.prov ? "*" : ""));
     const hit = el("rect", { x: cx - bw / 2, y: m.t, width: bw, height: H - m.t - m.b, fill: "transparent" });
-    hit.addEventListener("pointerenter", ev => { tt.style.display = "block"; tt.style.left = ev.clientX + 12 + "px"; tt.style.top = ev.clientY - 10 + "px"; tt.innerHTML = `<div class="v">${esc(g.name)} <span class="k">n=${g.vals.length}</span></div><div class="k">${T.median} ${o.fmtY(median(g.vals))} · ${T.mean} ${o.fmtY(mean(g.vals))}<br>min ${o.fmtY(Math.min(...g.vals))} · max ${o.fmtY(Math.max(...g.vals))}</div>`; }); hit.addEventListener("pointerleave", () => tt.style.display = "none"); });
+    hit.addEventListener("pointerenter", ev => { tt.style.display = "block"; tt.style.left = ev.clientX + 12 + "px"; tt.style.top = ev.clientY - 10 + "px";
+      tt.innerHTML = `<div class="v">${esc(g.name)} <span class="k">n=${vals.length}</span></div><div class="k">${T.median} ${o.fmtY(median(vals))} · ${T.mean} ${o.fmtY(mean(vals))}<br>min ${o.fmtY(Math.min(...vals))} · max ${o.fmtY(Math.max(...vals))}</div>`; });
+    hit.addEventListener("pointerleave", () => tt.style.display = "none"); });
 }
 function drawCDF(p, o, gs, size) {
   const { W, H } = size, m = { l: 62, r: 14, t: 8, b: 46 }; const svg = svgIn(p, W, H); const allv = fin(gs.flatMap(g => g.vals));
-  if (!allv.length) { const t = document.createElementNS("http://www.w3.org/2000/svg", "text"); t.setAttribute("x", W / 2); t.setAttribute("y", H / 2); t.setAttribute("text-anchor", "middle"); t.textContent = T.waiting; svg.appendChild(t); return; }
-  const xmax = Math.max(...allv) * 1.05; const { el, X, Y } = axes(svg, W, H, m, [0, xmax], [0, 1], { fmtY: v => Math.round(v * 100) + "%", logy: false, logx: false, xlabel: o.xlabel, fmtX: v => +v.toFixed(1), padLow: false, padHigh: false });
+  if (!allv.length) { emptyMsg(svg, W, H, T.waiting); return; }
+  const xmax = Math.max(...allv) * 1.05 || 1; const { el, X, Y } = axes(svg, W, H, m, [0, xmax], [0, 1], { fmtY: v => Math.round(v * 100) + "%", logy: false, logx: false, xlabel: o.xlabel, fmtX: v => fmtNum(v), padLow: false, padHigh: false });
   const series = [];
   for (const g of gs) { if (!g.n) continue; const v = fin(g.vals).sort((a, b) => a - b); const pts = [[0, 0]]; v.forEach((x, i) => pts.push([x, (i + 1) / g.n])); pts.push([xmax, v.length / g.n]); series.push({ name: `${g.name} (${v.length}/${g.n})`, color: g.color, data: pts });
     el("path", { d: pts.map((q, i) => (i ? `L${X(q[0]).toFixed(1)} ${Y(pts[i - 1][1]).toFixed(1)}L` : "M") + `${X(q[0]).toFixed(1)} ${Y(q[1]).toFixed(1)}`).join(""), fill: "none", stroke: g.color, "stroke-width": 2.2 }); }
-  tooltipOn(svg, W, m, X, px => { const f = (px - m.l) / (W - m.l - m.r); if (f < 0 || f > 1) return null; const xv = f * xmax; let h = `<div class="k">x = ${+xv.toFixed(1)}</div>`; for (const s of series) { const v = stepAt(s.data, xv); if (v == null) continue; h += `<div class="row"><span class="key" style="background:${s.color}"></span><span class="v">${Math.round(v * 100)}%</span><span class="k">${esc(s.name)}</span></div>`; } return h; });
+  tooltipOn(svg, W, m, px => { const f = (px - m.l) / (W - m.l - m.r); if (f < 0 || f > 1) return null; const xv = f * xmax; let h = `<div class="k">x = ${fmtNum(xv)}</div>`;
+    for (const s of series) { const v = stepAt(s.data, xv); if (v == null) continue; h += `<div class="row"><span class="key" style="background:${s.color}"></span><span class="v">${Math.round(v * 100)}%</span><span class="k">${esc(s.name)}</span></div>`; } return h; });
 }
 function drawHeatTable(p, spec, fa, asTable) {
-  const { F, S, arms } = C; const rf = F[spec.rows], cf = F[spec.cols]; if (!rf || !cf) { p.innerHTML = `<span class="small">rows/cols factor missing</span>`; return; }
-  const vals = asTable ? (spec.values || [spec.value]) : [spec.value || spec.y]; const agg = spec.agg === "mean" ? mean : median;
-  let h = `<table><tr><th>${esc(rf.label || rf.id)} \\ ${esc(cf.label || cf.id)}</th>${cf.levels.map(l => `<th style="color:${C.color(cf.id, l.id)}">${esc(l.label || l.id)}</th>`).join("")}</tr>`;
+  const { F, S } = C; const rf = F[spec.rows], cf = spec.cols ? F[spec.cols] : null; if (!rf) { p.innerHTML = `<div class="warnbox">${T.spec_err}: rows</div>`; return; }
+  const vals = asTable ? (spec.values || [spec.value]) : [spec.value || spec.y]; const agg = spec.agg === "mean" ? mean : median; const cols = cf ? cf.levels : [{ id: "_all", label: T.all }];
+  let h = `<div class="scroll"><table><tr><th>${esc(rf.label || rf.id)}${cf ? " \\ " + esc(cf.label || cf.id) : ""}</th>${cols.map(l => `<th style="color:${cf ? C.color(cf.id, l.id) : "inherit"}">${esc(l.label || l.id)}</th>`).join("")}</tr>`;
   for (const rl of rf.levels) { const rowArms = fa.filter(a => a.factors[rf.id] === rl.id); if (!rowArms.length) continue; h += `<tr><td><b>${esc(rl.label || rl.id)}</b></td>`;
-    const cells = cf.levels.map(cl => rowArms.filter(a => a.factors[cf.id] === cl.id));
-    const sdef = S[vals[0]] || {}, lower = sdef.lower_is_better !== false; const firsts = cells.map(c => agg(c.map(a => a.s[vals[0]]))); const best = fin(firsts).length ? (lower ? Math.min(...fin(firsts)) : Math.max(...fin(firsts))) : null;
-    cells.forEach((c, i) => { if (!c.length) { h += "<td></td>"; return; } let inner = "";
+    const cells = cols.map(cl => cf ? rowArms.filter(a => a.factors[cf.id] === cl.id) : rowArms);
+    const sdef = S[vals[0]] || {}, lower = sdef.lower_is_better !== false; const firsts = cells.map(c => agg(c.map(a => a.s[vals[0]]))); const fv = fin(firsts); const best = fv.length ? (lower ? Math.min(...fv) : Math.max(...fv)) : null;
+    cells.forEach(c => { if (!c.length) { h += "<td></td>"; return; } let inner = "";
       vals.forEach((vid, k) => { const sd_ = S[vid] || {}; const v = agg(c.map(a => a.s[vid])); const n = fin(c.map(a => a.s[vid])).length; const prov = c.some(a => a.provisional && a.s[vid] != null);
-        if (k === 0 && spec.normalize === "row_best" && best != null && v != null) { const r = lower ? v / best : best / v; const t = Math.min(1, Math.max(0, (r - 1) / 0.6)); const bg = `rgba(${Math.round(217 * t + 15 * (1 - t))},${Math.round(63 * t + 157 * (1 - t))},${Math.round(63 * t + 88 * (1 - t))},${asTable ? 0 : .25 + .45 * t})`;
-          inner += `<div style="${asTable ? "" : `background:${bg};border-radius:6px;padding:6px 8px;`}"><b>${r.toFixed(2)}×</b>${prov ? "*" : ""} <span class="small">${fmtNum(v, sd_.unit)} · n=${n}</span></div>`; }
-        else inner += `<div class="${k ? "small" : ""}"><span class="${k === 0 && v === best ? "best" : ""}">${asTable && k ? esc(sd_.label || vid) + ": " : ""}${fmtNum(v, sd_.unit)}</span>${prov ? "*" : ""} <span class="small">(n=${n})</span></div>`; });
+        if (k === 0 && spec.normalize === "row_best" && best != null && v != null && cells.length > 1) {
+          const ratioOk = best > 0 && v > 0; const r = ratioOk ? (lower ? v / best : best / v) : null; const t = ratioOk ? Math.min(1, Math.max(0, (r - 1) / 0.6)) : 0;
+          const bg = `rgba(${Math.round(217 * t + 15 * (1 - t))},${Math.round(63 * t + 157 * (1 - t))},${Math.round(63 * t + 88 * (1 - t))},${asTable ? 0 : .25 + .45 * t})`;
+          inner += `<div style="${asTable ? "" : `background:${bg};border-radius:6px;padding:6px 8px;`}"><b>${ratioOk ? r.toFixed(2) + "×" : "Δ " + fmtNum(lower ? v - best : best - v, sd_.unit)}</b>${prov ? "*" : ""} <span class="small">${fmtNum(v, sd_.unit)} · n=${n}</span></div>`; }
+        else inner += `<div class="${k ? "small" : ""}"><span class="${k === 0 && v === best && cells.length > 1 ? "best" : ""}">${asTable && k ? esc(sd_.label || vid) + ": " : ""}${fmtNum(v, sd_.unit)}</span>${prov ? "*" : ""} <span class="small">(n=${n})</span></div>`; });
       h += `<td class="num" style="text-align:left">${inner}</td>`; });
     h += "</tr>"; }
-  p.innerHTML = h + "</table>";
+  p.innerHTML += h + "</table></div>";
 }
 
 // ---------------------------------------------------------------- poll
 async function tick() {
-  if (window.__SNAPSHOT__) { render(window.__SNAPSHOT__); $("upd").className = "badge"; $("upd").textContent = T.snapshot + " · " + fmtT(window.__SNAPSHOT__.updated); return; }
-  try { const r = await fetch(LIVE_URL + "?t=" + Date.now()); if (!r.ok) throw new Error("HTTP " + r.status + " for " + LIVE_URL); render(await r.json()); }
-  catch (e) { $("upd").className = "badge stale"; $("upd").textContent = "fetch/render failed: " + (e && e.message || e); console.error(e); }
+  if (window.__SNAPSHOT__) { const s = window.__SNAPSHOT__; s._snapshot = true; render(s, true); return; }
+  try { const r = await fetch(LIVE_URL + "?t=" + Date.now()); if (!r.ok) throw new Error("HTTP " + r.status + " for " + LIVE_URL); const d = await r.json(); LAST_GOOD = d; render(d); }
+  catch (e) { console.error(e); if (LAST_GOOD) render(LAST_GOOD); $("upd").className = "badge stale"; $("upd").textContent = "fetch/render failed: " + (e && e.message || e) + (LAST_GOOD ? " · showing last good data" : ""); }
   setTimeout(tick, REFRESH_MS);
 }
 TAB = new URLSearchParams(location.hash.slice(1)).get("tab") || "overview";
-window.addEventListener("hashchange", () => { const t = new URLSearchParams(location.hash.slice(1)).get("tab"); if (t && t !== TAB) { TAB = t; if (D) render(D); } });
+window.addEventListener("hashchange", () => { const h = new URLSearchParams(location.hash.slice(1)); const t = h.get("tab") || "overview"; if (t === "explore") EXPL = null; if (t !== TAB || t === "explore") { TAB = t; if (D) render(D, true); } });
 tick();
 </script>
 </body>

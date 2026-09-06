@@ -1,11 +1,15 @@
-"""Default adapter (same as the one built into collector.py) — kept here as the reference to copy.
+"""Default adapter (identical to the one built into collector.py) — the reference to copy from.
 
 Layout per arm:
     <runs>/<arm_id>/events.jsonl   {"t": epoch, "ok": true, "<metric>": value, ...} one per line
-    <runs>/<arm_id>/status.json    {"status": "done"|"failed", "end": epoch, "cost_usd": 3.2, "note": "..."}   (optional)
+    <runs>/<arm_id>/status.json    {"status": "done"|"failed", "end": epoch, "cost_usd": 3.2, "note": "..."}   (optional;
+                                   for sweeps that only produce a final number, this file alone is enough)
     <runs>/<arm_id>/started        empty file whose mtime is the launch time                                  (optional)
 """
-import json, os
+import json, math, os
+
+
+def _num(v): return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
 
 
 def _jsonl(path):
@@ -23,11 +27,15 @@ def _jsonl(path):
 
 def collect_arm(arm, plan, ctx):
     d = os.path.join(ctx["runs"], arm["id"])
-    records = _jsonl(os.path.join(d, "events.jsonl"))
-    try: st = json.load(open(os.path.join(d, "status.json")))
+    ev = os.path.join(d, "events.jsonl"); records = _jsonl(ev)
+    sp = os.path.join(d, "status.json")
+    try: st = json.load(open(sp))
     except (OSError, json.JSONDecodeError): st = {}
     started = os.path.join(d, "started")
     start = os.path.getmtime(started) if os.path.exists(started) else None
-    scalars = {k: v for k, v in st.items() if isinstance(v, (int, float)) and not isinstance(v, bool) and k not in ("end", "start")}
-    return {"records": records, "scalars": scalars, "status": st.get("status"), "start": start, "end": st.get("end"),
-            "progress": st.get("progress"), "note": st.get("note"), "src": os.path.join(d, "events.jsonl")}
+    end = st.get("end")
+    if not records and st.get("status") and os.path.exists(sp):
+        mt = os.path.getmtime(sp); start = start or st.get("start") or mt; end = end or mt
+    scalars = {k: v for k, v in st.items() if _num(v) and k not in ("end", "start")}
+    return {"records": records, "scalars": scalars, "status": st.get("status"), "start": start, "end": end,
+            "progress": st.get("progress"), "note": st.get("note"), "src": ev}

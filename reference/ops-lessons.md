@@ -22,35 +22,43 @@ hours to days on remote GPU/accelerator hosts.
 6. **Estimates italic, observations upright; provisional values starred.** Users read an ETA as a
    promise and a best-so-far as a final unless the typography says otherwise.
 
+7. **A crashed arm is not a finished arm.** When a budget elapses with no status file the collector
+   closes the arm but marks it `auto_closed`; the page stars it, excludes it from medians and gate
+   tests, and lists it on Ops. A 5-minute OOM must never become a green "final" number.
+8. **Validate the plan before launch.** Agents authoring 100 lines of JSON typo ids; a typo'd metric
+   used to look like "waiting for data" forever. `--lint` cross-checks every reference and `--check`
+   refuses to run with errors.
+
 ## Processes on the data host
-7. Launch collectors and schedulers with `setsid nohup … < /dev/null > x.log 2>&1 &`. Without the
+9. Launch collectors and schedulers with `setsid nohup … < /dev/null > x.log 2>&1 &`. Without the
    stdin redirect the ssh session hangs; without `setsid` a recycled session takes the process tree.
-8. `pkill -f PATTERN` matches the ssh command line that carries PATTERN and kills the ssh itself.
+10. `pkill -f PATTERN` matches the ssh command line that carries PATTERN and kills the ssh itself.
    Kill by exact command line (`pkill -xf "…"`) or with the `[c]ollector.py` bracket trick, in its own
    ssh call with nothing after it.
-9. Heredocs and inline scripts through ssh get quote-mangled: `scp` the file, then run it.
-10. Never edit a running shell script in place (bash reads it incrementally).
-11. Orchestration and collection live **on the data host**. Laptops sleep, VPNs drop, sessions get
+11. Heredocs and inline scripts through ssh get quote-mangled: `scp` the file, then run it.
+12. Never edit a running shell script in place (bash reads it incrementally).
+13. Orchestration and collection live **on the data host**. Laptops sleep, VPNs drop, sessions get
     summarised. The laptop is a puller and a browser.
-12. Multi-day runs need credentials that renew themselves (instance roles, service accounts), not a
+14. Multi-day runs need credentials that renew themselves (instance roles, service accounts), not a
     human's login session.
-13. Two schedulers on one host without a resource partition collide confusingly; show occupancy on
+15. Two schedulers on one host without a resource partition collide confusingly; show occupancy on
     the Ops tab and reserve a few units for side experiments.
-14. Compiler/eval caches grow gigabytes per evaluation and have filled 500 GB disks mid-campaign.
+16. Build/evaluation caches grow gigabytes per evaluation and have filled 500 GB disks mid-campaign.
     Report `disk_pct_used`; red above 90%.
 
 ## Reading the numbers
-15. Every plot shows **all** levels of the grouping factor, not just this wave's arms.
-16. Print `n` next to every aggregate. In one program, every n=3 story but one died at n=5.
-17. Re-measure fixed reference artifacts through the run (anchors); >2% drift means the machine
+17. Every plot shows **all** levels of the grouping factor, not just this wave's arms.
+18. Print `n` next to every aggregate. In one program, every n=3 story but one died at n=5.
+19. Re-measure fixed reference artifacts through the run (anchors); >2% drift means the machine
     changed and the round's comparisons are discounted.
-18. Cost / token counts are censored on arms that used the whole budget; show sums with that caveat.
-19. Pre-registered gates go on the page before data arrives (`pending`), so verdicts are read against
-    the frozen bar rather than the shape of the curves.
+20. Cost / token counts are censored on arms that used the whole budget; show sums with that caveat.
+21. Pre-registered gates go on the page before data arrives (`pending`), so verdicts are read against
+    the frozen bar rather than the shape of the curves. Declarative tests compute p / effect live but
+    stay provisional (`pass*`) until every compared arm has finished.
 
 ## Frontend
-20. One HTML file, vanilla JS, inline SVG, no CDN, no build. It must open from
+22. One HTML file, vanilla JS, inline SVG, no CDN, no build. It must open from
     `python3 -m http.server` on a box without internet and freeze into a single snapshot file.
-21. Fetch with a cache-buster; write live.json via temp file + rename so a half file is never served.
-22. Every chart carries a one-sentence "how to read this"; people come back weeks later and to
+23. Fetch with a cache-buster; write live.json via temp file + rename so a half file is never served.
+24. Every chart carries a one-sentence "how to read this"; people come back weeks later and to
     campaigns they did not design.

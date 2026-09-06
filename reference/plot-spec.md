@@ -34,6 +34,8 @@ Examples (from `templates/plan.example.json`):
   "rows": "task", "cols": "condition", "agg": "median", "normalize": "row_best" }
 ```
 
+A spec that references an undeclared id renders a red "plot spec error" box instead of "waiting for data"; `collector.py --lint` reports the same mistakes before launch.
+
 ## Choosing plots
 
 - One plot per question the plan asks; for every hypothesis, at least one plot that could refute it.
