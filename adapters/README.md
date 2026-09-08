@@ -1,7 +1,6 @@
 # Adapters
 
-An adapter is one Python file with one function. It is the only experiment-specific code in the
-whole pipeline: it knows where *this* experiment writes its output and turns that into records.
+An adapter is one Python file with one function. It isolates experiment-specific data reading: it knows where *this* experiment writes its output and turns that into records.
 
 ```python
 def collect_arm(arm: dict, plan: dict, ctx: dict) -> dict:
@@ -25,24 +24,27 @@ by key; `t` (epoch seconds) drives the `minutes` axis and silence detection; `ok
 gates `best_so_far` curves; `step` is used by the `step` axis; `error` (string) is counted.
 NaN / inf values are dropped safely.
 
-## Markers your runner should write (cheap, and they remove all guessing)
+## Completion markers
+
+Markers are adapter-specific: the default JSONL reader uses `started` and `status.json`;
+the CSV reader uses `.started` and `.DONE`. Consult the chosen reader before changing your runner.
 
 | file | meaning |
 |---|---|
 | `<runs>/<arm>/started` or `<runs>/<arm>.started` | empty file; its mtime is the launch time |
 | `<runs>/<arm>/status.json` `{"status": "done", ...}` or `<runs>/<arm>.DONE` | the arm finished (otherwise a finished run looks *silent*, then gets auto-closed and starred) |
-| `status.json` `{"status": "failed", "note": "OOM"}` | the arm failed (excluded from medians) |
+| `status.json` `{"status": "failed", "note": "OOM"}` | the arm failed; inspect failure status before interpreting summaries |
 
 ## Bundled adapters
 
 | file | reads | typical use |
 |---|---|---|
 | `jsonl_events.py` (default, built into collector) | `<runs>/<arm>/events.jsonl` + `status.json` + `started` | agent harnesses that log one JSON per evaluation; sweeps with only a `status.json` |
-| `csv_rows.py` | `<runs>/<arm>.csv` or `<runs>/<arm>/metrics.csv` | training loops appending a metrics CSV (`--adapter-arg time_col=t step_col=step`) |
+| `csv_rows.py` | `<runs>/<arm>.csv` or `<runs>/<arm>/metrics.csv` | training loops appending a metrics CSV (`--adapter-arg time_col=t --adapter-arg step_col=step`) |
 | `log_regex.py` | `<runs>/<arm>/*.log` parsed with a regex of named groups | anything that only prints progress lines |
 | `multi_lane.py` | `<runs>/<arm>/<lane>/events.jsonl` (team-of-agents arms) | best-over-lanes curves; `live_root` for scratch dirs |
 
-Run `python3 collector.py --adapter adapters/csv_rows.py --adapter-arg time_col=timestamp …`.
+Run `python3 templates/collector.py --adapter adapters/csv_rows.py --adapter-arg time_col=timestamp …`.
 
 Writing a new one: copy the closest file, keep `src` honest, run `--check`, read the printed
 statuses and sources, then detach.

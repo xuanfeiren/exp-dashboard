@@ -30,16 +30,29 @@ contracts and offline operation; adapt its CSS, markup and rendering code when t
   guide, repair concrete failures, and report any unverified behavior. A successful render is not a
   design approval.
 
-## Pipeline (4 pieces, 3 places)
+## Start with the actual task
 
-```
-data host                                laptop                              browser
-────────────────────────────             ──────────────────────────          ──────────────────────────
-runs/…  (events / csv / logs) ─┐         ~/<name>-dashboard/                 index.html (tabs: overview,
-plan.json  (design, phases,    ├─► collector.py ─► live.json ──scp──►  live.json                        plan, progress, results,
-            metrics, plots)    │   every 30 s, atomic            (serve.sh or hub-serve.sh)     explore, ops) refetches
-state.json (narrative log) ────┘                                                                 every 25 s
-```
+Inspect the existing plan, page, data reader, and a representative output before changing them.
+Resolve paths relative to this skill's directory; shell examples below assume the repository root.
+Keep campaign output outside the bundled templates.
+
+| Request | Work to perform |
+|---|---|
+| New dashboard | Establish the question and data contract, then follow the workflow below. |
+| Redesign an existing dashboard | Preserve its working connection; read the design guide, change the relevant UI, and verify affected views. Do not launch another collector unnecessarily. |
+| Connect or repair live data | Trace one arm from source through adapter to `live.json` and rendered value. Repair the broken boundary. |
+| Offline demo or report | Use clearly labeled simulated data or an existing snapshot; no remote deployment required. |
+
+Infer routine choices from the repository and user request. Ask only for missing facts that materially
+change correctness, such as an ambiguous metric direction or source location. Do not invent experiment
+results, completion states, hypotheses, or statistical evidence. Monitoring does not authorize launching
+experiments, changing budgets, or terminating their processes.
+
+## Components
+
+The collector runs where the experiment data is readable and writes `live.json` atomically. The page
+fetches that file from a local HTTP server. If the data is remote, a puller can copy it to the viewing
+machine; a single machine needs no puller. A snapshot embeds the data for direct offline opening.
 
 | path | role |
 |---|---|
@@ -60,21 +73,23 @@ state.json (narrative log) ────┘                                      
 1. **Translate the plan into `plan.json`** while it is fresh (see "Writing the plan"). Start from
    `plan.minimal.json` or `plan.example.json`; keep the user's wording in `description`,
    `hypotheses`, and each phase's purpose / method / criteria / outputs.
-2. **Lint it:** `python3 collector.py --plan plan.json --lint`. Every id reference is checked (plots
+2. **Lint it:** `python3 templates/collector.py --plan plan.json --lint`. Every id reference is checked (plots
    ↔ metrics/scalars/x-axes/factors, baseline level, arms ↔ phases, `depends_on` graph, gate tests).
    Fix errors; read the warnings (missing `est_min`, missing `explain`).
 3. **Pick or write the adapter.** Runner already writes one JSON per evaluation → default adapter.
    CSV per run → `adapters/csv_rows.py` (pass `--adapter-arg time_col=…`; have the runner touch a
    `DONE` marker and a `.started` marker). Progress lines in a log → `adapters/log_regex.py`.
    Teams of parallel workers → `adapters/multi_lane.py`. Otherwise copy the closest file and
-   implement `collect_arm()` (≈30 lines); `src` must be the real path you read.
+   implement `collect_arm()`; keep source hints truthful and inspect the actual input files, including
+   status-only inputs. Follow that adapter's marker conventions; they are not interchangeable.
 4. **Liveness check before anything else:**
-   `python3 collector.py --plan plan.json --runs <root> --out live.json [--adapter …] --check`
+   `python3 templates/collector.py --plan plan.json --runs <root> --out live.json [--adapter …] --check`
    prints lint results, each arm's status and data source, and exits non-zero if nothing is readable.
    Pre-launch, pass `--allow-empty` and re-check within minutes of launch. If the campaign is
    expensive, run `scripts/smoke_test.sh` first to watch the whole pipeline render on fake data.
-5. **Detach the collector on the data host:**
-   `setsid nohup python3 collector.py … --state state.json --interval 30 < /dev/null > collector.log 2>&1 &`
+5. **Run the collector where the data is.** Start in the foreground for local development. For
+   unattended Linux operation, use the existing supervisor or detach:
+   `setsid nohup python3 templates/collector.py … --state state.json --interval 30 < /dev/null > collector.log 2>&1 &`
    and confirm `updated` in live.json advances across two reads. Copy scripts with scp; never
    paste them through an ssh heredoc.
 6. **Compose and stand up the page.** Choose the visual direction and primary comparison using the
@@ -89,12 +104,14 @@ state.json (narrative log) ────┘                                      
    readability, dense and sparse states, theme contrast and working interactions. Existing smoke /
    scenario scripts supply fixtures, not proof of visual quality. Fix demonstrated defects and recheck
    affected views; if rendering or interaction tools are unavailable, state that limitation.
-8. **Run the campaign through the page.** Arm and phase transitions are logged automatically; you
+8. **Narrate the campaign when requested.** Arm and phase transitions are logged automatically; you
    add what the collector cannot know via `scripts/logline.py`: `now_doing` whenever what you are
    doing changes (it is timestamped and greys out when stale), `phase <id> running|done` for manual
    phases, `gate <id> pass|fail`, `hypothesis <id> supported|refuted`, `incident warn|error`, `log`.
-9. **Close out.** Mark the last phase done, set final verdicts, then
-   `scripts/snapshot.py index.html live.json snapshot_<date>.html` into the campaign folder.
+9. **Close out with evidence.** Mark phases done only when their completion criteria are met; leave
+   unresolved hypotheses pending. Record the evidence for manual verdicts. A snapshot may be created at
+   any stage with `python3 scripts/snapshot.py index.html live.json snapshot_<date>.html`; verify its
+   contents and label unfinished or simulated campaigns accurately.
 
 ## Writing the plan (what makes the page good)
 
@@ -127,7 +144,9 @@ state.json (narrative log) ────┘                                      
   `{"kind": "paired_wilcoxon"|"mann_whitney"|"welch_t", "scalar": …, "a": {factor: level},
   "b": {factor: level}, "pair_by": [factors], "alpha": 0.05, "min_effect": 0.05}` — the collector
   computes p / effect / n on every tick and shows a provisional verdict (`pass*`) until every
-  compared arm is finished; a manual `logline.py gate` verdict always wins.
+  compared arm is finished; a manual `logline.py gate` verdict always wins. `min_effect` is relative improvement, not
+  percentage points. These repeated checks have no sequential or multiple-testing correction; choose
+  tests and comparable replicates deliberately, and do not equate a failed gate with a refuted hypothesis.
 - **hypotheses**: `id`, `text`, `prediction`, `status: pending`; verdicts via logline.
 - `lang` sets the UI language (`en`/`zh`); write plan text in the user's language.
 
@@ -151,14 +170,14 @@ state.json (narrative log) ────┘                                      
 - `*` = provisional: the arm is unfinished **or was auto-closed** (budget elapsed with no status
   file — a crash looks like this). Auto-closed arms are excluded from baseline medians and gate
   tests and are listed on the Ops tab.
-- Every aggregate shows `n`; curves only extend as far as half the group's arms have data; raw
+- Every aggregate shows `n`; curve support is based on the lanes with data, not all planned arms; raw
   metrics are interpolated, never held flat past an arm's last point.
 - Italic = estimate, upright = observed, orange = overdue, "unknown" = no basis for a number.
 
 ## Rules (details and the incidents behind them: reference/ops-lessons.md)
 
 - Never trust a monitor that has not shown real data. `--lint`, `--check`, read `src`, then detach.
-- Collector and orchestration live on the data host; the laptop only pulls and displays.
+- For remote campaigns, keep collection on the data host; the viewing machine pulls and displays.
 - Heartbeat badge, silent-arm detection, mass-silence incident, auto-close marking and disk % are
   always on.
 - All group levels accounted for in every comparison; explicit filters / facets for crowding, never
@@ -166,3 +185,17 @@ state.json (narrative log) ────┘                                      
 - No CDN, no build step: one HTML file that opens from `python3 -m http.server` offline and can
   be frozen into a single snapshot file.
 - `setsid nohup … < /dev/null &`, kill by exact command line, scp scripts instead of heredocs.
+
+## Completion criteria
+
+Before handing off, confirm the relevant outcomes—not just that files were written:
+
+- **Data:** lint passes; a real arm's values, units, direction and status agree with its source;
+  live freshness advances if live collection is in scope. Simulated fixtures are labeled.
+- **Design:** the first viewport communicates the main question, useful comparison and urgent issues;
+  labels and sample sizes are readable; dense and sparse views remain coherent.
+- **Interaction:** exercise affected navigation, filters, legends, enlarged charts and arm details;
+  check narrow layout and theme contrast when UI changes. Report unavailable checks explicitly.
+- **Delivery:** provide the usable page or snapshot location, summarize changes and verification,
+  and name remaining limitations. Do not claim deployment, commits, synchronization or validation
+  without observing their success.
