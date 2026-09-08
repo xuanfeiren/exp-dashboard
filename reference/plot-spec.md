@@ -44,4 +44,5 @@ A spec that references an undeclared id renders a red "plot spec error" box inst
   says who wins, the second says whether they paid for it.
 - Use a `cdf` of a catch-up scalar to show *when* conditions reach a bar, not just *whether*.
 - A `heatmap` normalised to row best is the fastest way to read a factor × factor design.
-- Always keep every level of the grouping factor in the plot; hide interactively, never by omission.
+- Account for every level of the grouping factor. Use facets or explicit interactive filters when
+  the comparison would otherwise be unreadable; show filter state and never silently omit groups.

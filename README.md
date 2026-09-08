@@ -1,10 +1,16 @@
 # exp-dashboard
 
-**A skill that turns an experiment plan into a live, tabbed dashboard — so you watch a web page instead of a terminal.**
+**A skill for visually distinctive, information-rich experiment dashboards — with live progress, readable comparisons and operational context.**
 
 You (or your coding agent) write the plan; the agent drops in a 30-line data adapter; from then on the
 campaign runs itself onto one HTML page: what the experiment is, where it is right now, when each phase
 will finish, and every declared metric drawn against every declared x-axis while the data is still coming in.
+
+Visual quality and design character come first, with practical interactions and useful information
+density. The bundled HTML is a functional starting point: agents adapt hierarchy, typography and
+layout to the experiment, then review rendered views against the
+[design guide](reference/design-guide.md). The screenshots below show the redesigned template with simulated data.
+Download and open [the standalone demo](docs/demo.html) to try all six views without a collector.
 
 Built for agent-run research campaigns (many arms × conditions × seeds, hours to days, remote machines),
 but the data model is generic: anything that produces records over time fits.
@@ -15,7 +21,7 @@ but the data model is generic: anything that produces records over time fits.
 
 | tab | contents |
 |---|---|
-| **Overview** | heartbeat, "what is happening now" banner, phase strip, tiles (done / running / silent / queued / ETA / cost), headline plots, hypotheses & gates, latest incidents and log |
+| **Overview** | heartbeat, "what is happening now" banner, phase strip, compact summaries (completion, attention, ETA, cost or records), headline plots, hypotheses & gates, latest incidents and log |
 | **Plan** | the plan text (markdown), hypotheses with predictions and verdicts, factors and levels, budget, every phase as an expandable card (purpose · method · criteria · outputs · planned vs actual), what is measured |
 | **Progress** | Gantt timeline with observed (solid) vs estimated (hatched) bars and a *now* line, per-phase ETA table, arm matrix (pick any two factors for rows/columns), sortable/filterable arm table; click any arm for its details |
 | **Results** | all declared plots: curves (median ± IQR / mean ± sd / individual arms), bars, boxes, scatter, CDFs, heatmaps, tables; click a title to enlarge; click a legend entry to hide a group |
@@ -112,7 +118,7 @@ Distilled from months of multi-day agent campaigns (details in [`reference/ops-l
 - live data often lives somewhere else than final data (scratch dirs wiped on reboot) — adapters read both;
 - show heartbeat age in red when stale; flag silent arms; flag N arms going silent in the same minute;
 - orchestration and collection live on the data host; the laptop only pulls and displays;
-- all conditions on every figure, `n` next to every aggregate, italic estimates, starred provisional values;
+- all conditions accounted for, explicit filters when needed, `n` next to every aggregate, italic estimates, starred provisional values;
 - detach with `setsid nohup … < /dev/null &`; kill by exact command line; copy scripts, don't paste them through ssh.
 
 ## Layout

@@ -47,7 +47,8 @@ hours to days on remote GPU/accelerator hosts.
     Report `disk_pct_used`; red above 90%.
 
 ## Reading the numbers
-17. Every plot shows **all** levels of the grouping factor, not just this wave's arms.
+17. Every comparison accounts for **all** levels of the grouping factor, not just this wave's arms.
+    Facets and explicit filters may reduce crowding; make hidden levels visible in the filter state.
 18. Print `n` next to every aggregate. In one program, every n=3 story but one died at n=5.
 19. Re-measure fixed reference artifacts through the run (anchors); >2% drift means the machine
     changed and the round's comparisons are discounted.

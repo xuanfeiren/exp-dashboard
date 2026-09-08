@@ -1,14 +1,34 @@
 ---
 name: exp-dashboard
-description: Build a live, tabbed web dashboard for any experiment campaign an agent is about to launch or is running — arms × factors, phases with time estimates that keep updating, every declared metric plotted against every x-axis while data streams in, results tables, hypotheses and pre-registered gates (with built-in statistics), incidents and narrative log. Use right after writing an experiment plan and before launching it; when the user asks to monitor / track / watch an experiment, wants a dashboard, 看板, 前端 or 实时监控 instead of reading a terminal; or when long runs live on remote machines. Covers plan.json → lint → on-host collector → live.json → laptop puller → single-file HTML, liveness checks, hub registration, logging and a final snapshot.
+description: Build or improve a visually distinctive, information-rich live dashboard for an experiment campaign, including its plan, progress, results and operational health. Use when the user asks to monitor or compare experiments, turn an experiment plan into a dashboard, or improve an existing experiment dashboard (看板、实验前端、实时监控). Includes an offline single-file frontend and live-data collection; monitoring does not itself authorize launching experiments.
 ---
 
 # exp-dashboard
 
-Outcome: the user opens one URL and never has to read the terminal. The page explains the plan,
-says where the campaign is and when each phase will finish, and draws every metric the plan
-declared while the data is still arriving. Everything the agent would have typed in chat about
-progress goes onto the page instead.
+Outcome: a beautifully composed research workspace that makes the experiment understandable at a
+glance and supports serious comparison without returning to the terminal. **Visual quality and design
+character are the first priority; usefulness and information density must be achieved within that
+standard.** Correct data, readable evidence and working controls are prerequisites: decoration cannot
+compensate for misleading results or an unusable page.
+
+## Design contract
+
+Read [reference/design-guide.md](reference/design-guide.md) before composing or modifying the page.
+Treat the supplied HTML as a working implementation, not an approved final design. Preserve its data
+contracts and offline operation; adapt its CSS, markup and rendering code when the campaign needs it.
+
+- Choose a coherent visual direction appropriate to the user's taste or existing product: typography,
+  palette, spacing, surface treatment and chart styling must form one system. Avoid substituting a
+  fashionable theme, gradient or a wall of rounded cards for actual composition.
+- Let the main research question determine the visual hierarchy. Give its most useful comparison
+  substantial space; keep operational context compact and urgent problems conspicuous.
+- Increase **useful comparisons per viewport**, not the number of boxes or tiny labels. Use aligned
+  tables, readable small multiples and concise annotations; disclose long logs and raw records on demand.
+- Keep all declared metrics and axes available in Results / Explore. Curate the initial view rather
+  than rendering the full Cartesian product as equally important charts.
+- Inspect rendered output and try its primary interactions. Apply the adversarial review in the design
+  guide, repair concrete failures, and report any unverified behavior. A successful render is not a
+  design approval.
 
 ## Pipeline (4 pieces, 3 places)
 
@@ -27,7 +47,7 @@ state.json (narrative log) ────┘                                      
 | `templates/plan.example.json` | fully worked plan: waves, manual phase, 3 metrics × 3 x-axes, 9 plots, gates with statistics |
 | `templates/collector.py` | generic collector; never edited per experiment; `--lint`, `--check`, `--adapter` |
 | `adapters/*.py` | data readers: jsonl events (default), csv rows, log regex, multi-lane teams |
-| `templates/dashboard.html` | the page; only the CONFIG block is ever edited |
+| `templates/dashboard.html` | functional starting point; CONFIG for wiring, CSS / markup / JS for deliberate design changes |
 | `templates/serve.sh`, `templates/hub.html`, `templates/hub-serve.sh` | laptop side: single campaign, or one hub for many |
 | `scripts/logline.py` | narrate: log / now_doing / phase status / gate & hypothesis verdicts / incidents → state.json |
 | `scripts/simulate.py`, `scripts/smoke_test.sh`, `scripts/scenarios.sh` | fake campaign + per-tab screenshots; regression scenarios (csv without timestamps, result-file-only sweep, hostile plan) |
@@ -57,12 +77,18 @@ state.json (narrative log) ────┘                                      
    `setsid nohup python3 collector.py … --state state.json --interval 30 < /dev/null > collector.log 2>&1 &`
    and confirm `updated` in live.json advances across two reads. Copy scripts with scp; never
    paste them through an ssh heredoc.
-6. **Stand up the page.** `mkdir ~/<name>-dashboard && cp templates/dashboard.html …/index.html`.
+6. **Compose and stand up the page.** Choose the visual direction and primary comparison using the
+   design guide. Adapt the copied template to the campaign; do not stop at changing its title or palette.
+   `mkdir ~/<name>-dashboard && cp templates/dashboard.html …/index.html`.
    One campaign → `serve.sh` (edit REMOTE / REMOTE_FILES / PORT). Several → the hub: symlink the dir
    into the hub folder, add a line to `pull.list` and an entry to `campaigns.json`. If a hub is
    already serving, add the lines and restart it (kill by exact command line, then relaunch).
-7. **Look at it before announcing it.** Headless screenshot of each tab (`smoke_test.sh` shows the
-   Chrome command) and read the PNGs. Fix empty panels, wrong units, unreadable labels.
+7. **Review the actual experience before announcing it.** Inspect each populated tab, then the
+   primary view at a normal laptop viewport and a narrow viewport. A tall full-page screenshot alone
+   hides first-screen problems. Use the design guide's adversarial checks for hierarchy, chart
+   readability, dense and sparse states, theme contrast and working interactions. Existing smoke /
+   scenario scripts supply fixtures, not proof of visual quality. Fix demonstrated defects and recheck
+   affected views; if rendering or interaction tools are unavailable, state that limitation.
 8. **Run the campaign through the page.** Arm and phase transitions are logged automatically; you
    add what the collector cannot know via `scripts/logline.py`: `now_doing` whenever what you are
    doing changes (it is timestamped and greys out when stale), `phase <id> running|done` for manual
@@ -135,7 +161,8 @@ state.json (narrative log) ────┘                                      
 - Collector and orchestration live on the data host; the laptop only pulls and displays.
 - Heartbeat badge, silent-arm detection, mass-silence incident, auto-close marking and disk % are
   always on.
-- All levels of the grouping factor in every plot; `n` next to every aggregate.
+- All group levels accounted for in every comparison; explicit filters / facets for crowding, never
+  silent omission. Keep `n` next to every aggregate.
 - No CDN, no build step: one HTML file that opens from `python3 -m http.server` offline and can
   be frozen into a single snapshot file.
 - `setsid nohup … < /dev/null &`, kill by exact command line, scp scripts instead of heredocs.
