@@ -1,5 +1,16 @@
 # Changelog
 
+## Design-first template refresh (2026-09-06)
+
+- Make visual quality and design character the leading skill criteria, backed by concrete adversarial checks.
+- Replace equal-weight tiles with compact summaries, dedicated navigation and a wide primary comparison.
+- Improve typography, facet sizing, compact axis ticks, narrow layouts and light / dark / system themes.
+- Add keyboard legends, chart enlargement affordances, modal focus management and Escape dismissal.
+- Preserve search and filters across refresh; keep inspected observations stable while updating heartbeat.
+- Align campaign hub styling and escape labels; retain the offline, dependency-free data contract.
+- Include a standalone simulated-data demo and refreshed screenshots.
+
+
 ## v2.1 — after an adversarial review (2026-09-06)
 
 An independent reviewer scored the first public version on ten dimensions, ran it on three self-built
