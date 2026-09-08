@@ -1,137 +1,201 @@
 # exp-dashboard
 
-**A skill for visually distinctive, information-rich experiment dashboards — with live progress, readable comparisons and operational context.**
+**Make an experiment understandable at a glance—and worth looking at.**
 
-You (or your coding agent) write the plan; the agent drops in a 30-line data adapter; from then on the
-campaign runs itself onto one HTML page: what the experiment is, where it is right now, when each phase
-will finish, and every declared metric drawn against every declared x-axis while the data is still coming in.
+An agent skill and a self-contained dashboard for research campaigns: compare conditions, follow
+progress, inspect evidence, and catch stalled runs. Visual quality comes first, with useful information
+density and practical interactions built into the same design.
 
-Visual quality and design character come first, with practical interactions and useful information
-density. The bundled HTML is a functional starting point: agents adapt hierarchy, typography and
-layout to the experiment, then review rendered views against the
-[design guide](reference/design-guide.md). The screenshots below show the redesigned template with simulated data.
-Download and open [the standalone demo](docs/demo.html) to try all six views without a collector.
+No frontend build. No CDN. A Python collector, your experiment data, and one HTML page.
 
-Built for agent-run research campaigns (many arms × conditions × seeds, hours to days, remote machines),
-but the data model is generic: anything that produces records over time fits.
+[Try the offline demo](docs/demo.html) · [Agent instructions](SKILL.md) · [Design guide](reference/design-guide.md) · [Data contract](reference/live-schema.md)
 
-<p align="center"><img src="docs/overview.png" width="880" alt="overview tab"></p>
+<p align="center"><img src="docs/overview.png" width="1000" alt="Experiment overview with compact status summaries and a prominent comparison chart; simulated data"></p>
 
-## What the page does
+## See it before connecting data
 
-| tab | contents |
-|---|---|
-| **Overview** | heartbeat, "what is happening now" banner, phase strip, compact summaries (completion, attention, ETA, cost or records), headline plots, hypotheses & gates, latest incidents and log |
-| **Plan** | the plan text (markdown), hypotheses with predictions and verdicts, factors and levels, budget, every phase as an expandable card (purpose · method · criteria · outputs · planned vs actual), what is measured |
-| **Progress** | Gantt timeline with observed (solid) vs estimated (hatched) bars and a *now* line, per-phase ETA table, arm matrix (pick any two factors for rows/columns), sortable/filterable arm table; click any arm for its details |
-| **Results** | all declared plots: curves (median ± IQR / mean ± sd / individual arms), bars, boxes, scatter, CDFs, heatmaps, tables; click a title to enlarge; click a legend entry to hide a group |
-| **Explore** | combine any metric × x-axis × group × facet × aggregation on the fly; the view is encoded in the URL hash |
-| **Ops** | GPU / core occupancy, disk, load, anchor drift, incidents, silent arms with their data paths, log, collector info |
-
-Time estimates update on every refresh: running arms end at `start + budget` or are extrapolated from their
-progress rate, queued arms are packed onto `concurrency` slots no earlier than their phase's dependencies finish,
-manual phases use their planned duration, durations are learned from finished arms, and the plan's `est_min` is the
-fallback prior. Unknown stays *unknown*; late work turns orange (*overdue*). Estimates are italic; observations
-upright; provisional numbers (unfinished **or auto-closed** arms) are starred.
-
-Pre-registered gates can carry a declarative test (`paired_wilcoxon`, `mann_whitney`, `welch_t`); the collector
-computes p-value, effect and n on every tick and shows a provisional verdict until every compared arm has finished.
-The collector also emits an automatic event feed (arm started / finished / failed / silent / auto-closed, phase
-started / finished) and flags N arms going silent in the same minute.
-
-<p align="center"><img src="docs/progress.png" width="880" alt="progress tab"></p>
-<p align="center"><img src="docs/results.png" width="880" alt="results tab"></p>
-
-## Quickstart (fake campaign, 90 seconds)
+The screenshots and demo use **simulated data**. Download `docs/demo.html` and open it directly in a
+browser, or serve the checked-out demo locally:
 
 ```bash
 git clone https://github.com/xuanfeiren/exp-dashboard.git
 cd exp-dashboard
-scripts/smoke_test.sh /tmp/expdash-smoke 8399 60     # simulate → collect → serve → screenshot every tab
-open http://localhost:8399                            # or look at /tmp/expdash-smoke/shot_*.png
-scripts/scenarios.sh                                  # regression: csv without timestamps, result-file-only sweep, hostile plan
+python3 -m http.server 8399 --bind 127.0.0.1 --directory docs
 ```
 
-## Using it as an agent skill
+Open <http://localhost:8399/demo.html>. Stop the server with Ctrl-C. The snapshot needs no collector
+or network connection; it demonstrates the interface with frozen data.
 
-The repo *is* a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/skills) (also usable
-with any agent that reads `SKILL.md`):
+## Use it with your agent
+
+Point your coding agent at this repository's `SKILL.md`, or install the repository in the skill
+directory supported by your agent. Keep the accompanying `reference/`, `templates/`, `adapters/`,
+and `scripts/` directories together; the skill uses them during implementation.
+
+A useful first request:
+
+> Read SKILL.md and build a dashboard for my experiment. The plan is at [path] and the run outputs
+> are at [path]. Prioritize a distinctive, beautiful interface, readable comparisons, and useful
+> information density. Check a real run before connecting the page, then inspect the rendered
+> dashboard and test its main interactions. Do not launch experiments.
+
+For an existing dashboard:
+
+> Read SKILL.md and adversarially review this dashboard. Improve its hierarchy, chart readability,
+> information density, and interaction quality. Preserve the data contract and explain what you
+> verified. You may redesign the template completely.
+
+The HTML is a working starting point, not a design constraint. The skill asks the agent to choose
+an intentional visual direction, give the main research question enough space, and repair problems
+found in rendered views. Monitoring a campaign does **not** authorize starting or changing it.
+
+## What you can inspect
+
+| View | Questions it answers |
+|---|---|
+| **Overview** | What is happening? What needs attention? Which comparison matters most? |
+| **Plan** | What are the hypotheses, factors, phases, methods, and decision criteria? |
+| **Progress** | Which arms are running, queued, late, or finished? What is observed versus estimated? |
+| **Results** | How do conditions compare across curves, distributions, scalar summaries, and tables? |
+| **Explore** | What changes when I choose another metric, axis, grouping, facet, or aggregation? |
+| **Ops** | Is the data fresh? Which arms are silent? What do incidents and host measurements show? |
+
+The template includes light, dark, and system themes, chart enlargement, group toggles, arm details,
+and sortable/filterable run tables. Results support curves, bars, boxes, scatter plots, CDFs,
+heatmaps, and tables; see the [plot specification](reference/plot-spec.md).
+
+<p align="center"><img src="docs/results.png" width="1000" alt="Results view showing several complementary comparisons of simulated experiment conditions"></p>
+
+## Connect a real campaign
+
+**Requirements:** Python 3 for the collector and local server, a modern browser, and readable run
+outputs. The bundled collector and adapters use Python's standard library. Remote pulling additionally
+needs SSH/SCP; Linux detachment commands are optional deployment choices.
+
+Run these commands from the repository root. Use a new campaign directory; replace the example run
+path with your own.
 
 ```bash
-git clone https://github.com/xuanfeiren/exp-dashboard.git ~/.claude/skills/exp-dashboard
-# or: npx skills add xuanfeiren/exp-dashboard
+mkdir my-campaign
+cp templates/plan.minimal.json my-campaign/plan.json
+cp templates/dashboard.html my-campaign/index.html
 ```
 
-Then, after the agent has written an experiment plan, say "put this on a dashboard" (or just launch —
-the skill's description triggers on experiment campaigns). `SKILL.md` walks the agent through:
-plan.json → adapter → liveness check → detached collector → page → screenshot check → narrate through
-`logline.py` → snapshot at the end.
+1. **Edit the plan.** Define your actual factors, arm IDs, metric names and units, direction of
+   improvement, phases, and headline plots. The minimal example is a learning-rate sweep with
+   `val_acc` and CSV data. Its generated IDs must match your run filenames/directories. Use
+   [the full example](templates/plan.example.json) for more elaborate phases and gates.
+2. **Choose a reader.** The default reads JSONL events and optional status files. For CSV, use the
+   command below. Other options and exact marker conventions are in [adapters/README.md](adapters/README.md).
+3. **Validate and collect one real sample.** `--lint` checks the plan; `--check` also writes one
+   `live.json`, reports arm statuses and sources, and fails if no data is readable.
 
-## How it works
-
+```bash
+python3 templates/collector.py --plan my-campaign/plan.json --lint
+python3 templates/collector.py \
+  --plan my-campaign/plan.json --runs /absolute/path/to/runs \
+  --adapter adapters/csv_rows.py --out my-campaign/live.json --check
 ```
-data host                              laptop                         browser
-runs/… ──► collector.py ──► live.json ──scp──► ~/<name>-dashboard/ ──► index.html
-plan.json, state.json     (every 30 s)         serve.sh / hub-serve.sh      (refetch every 25 s)
+
+Inspect the reported sources and compare at least one arm's values and status with its original
+output. `--allow-empty` is only for checking pre-launch wiring; it is not evidence of a live connection.
+
+4. **Start collection**, keeping the same adapter settings used in the check:
+
+```bash
+python3 templates/collector.py \
+  --plan my-campaign/plan.json --runs /absolute/path/to/runs \
+  --adapter adapters/csv_rows.py --out my-campaign/live.json --interval 30
 ```
 
-1. **`plan.json`** — the contract (see [`templates/plan.example.json`](templates/plan.example.json)):
-   `factors` (independent variables incl. replicates) → `arms`; `phases` with `est_min`, `depends_on`,
-   purpose/method/criteria/outputs; `metrics` (per-record series: `best_so_far` | `raw` | `cumsum`),
-   `x_axes` (`minutes`, `evals`, `step`, or any numeric field), `scalars` (one number per arm, derived
-   or adapter-provided), `plots`, `hypotheses`, `gates`, `baseline`.
-2. **`collector.py`** runs where the data is. It calls the adapter for every arm, builds every
-   metric × x-axis curve, derives scalars, infers status (queued / running / silent / done / failed),
-   rolls up phases, flags mass silence (N arms dying in the same minute = credentials / host), merges
-   the hand-written `state.json`, and writes `live.json` atomically. `--check` proves it can see data
-   before you trust it.
-3. **`collector.py --lint`** validates every id reference in the plan (plots ↔ metrics / scalars / x-axes /
-   factors, arms ↔ phases, `depends_on` cycles, gate tests) before anything runs; `--check` runs the lint plus one
-   collection tick and refuses to proceed when no arm has readable data.
-4. **Adapters** (`adapters/`) are the only experiment-specific code: `collect_arm(arm, plan, ctx) →
-   {records, scalars, status, start, end, progress, note, src}`. Bundled: JSON-lines events, CSV
-   rows, regex over log files, multi-lane teams.
-5. **`dashboard.html`** is one file, vanilla JS + inline SVG, no CDN, no build. It works from
-   `python3 -m http.server` on an air-gapped box and can be frozen into a single snapshot.
-6. **`logline.py`** is how the agent narrates: `log`, `now_doing`, `phase <id> running|done`,
-   `gate <name> pass|fail`, `hypothesis <id> supported|refuted`, `incident warn|error`.
+5. **In another terminal, serve the page:**
 
-Schemas: [`reference/live-schema.md`](reference/live-schema.md), [`reference/plot-spec.md`](reference/plot-spec.md).
-
-## Plot types
-
-| type | needs | shows |
-|---|---|---|
-| `curve` | metric `y`, x-axis `x`, optional `group`, `facet`, `agg` ∈ median_iqr / mean_sd / lanes | step or line curves per group; band; dashed baseline final; running arms extend to now |
-| `bar` / `box` | scalar `y`, `group`, optional `facet` | median (or mean) with whiskers and per-arm dots / quartile boxes |
-| `scatter` | scalars `x`, `y`, `color` factor | one dot per arm; provisional arms hollow |
-| `cdf` | scalar `y` (e.g. time-to-threshold), `group` | fraction of arms below x; arms that never reach it keep the curve below 1 |
-| `heatmap` | scalar `value`, factors `rows`, `cols`, `normalize: row_best` | ratio to best-in-row with colour |
-| `table` | scalars `values`, `rows`, `cols` | medians with n |
-
-## Hard-won operating rules
-
-Distilled from months of multi-day agent campaigns (details in [`reference/ops-lessons.md`](reference/ops-lessons.md)):
-
-- a monitor must prove it sees data before anyone trusts it (`--lint`, `--check`, printed `src`);
-- a crashed arm is not a finished arm: budget elapsed without a status file → *auto-closed*, starred, excluded from medians;
-- live data often lives somewhere else than final data (scratch dirs wiped on reboot) — adapters read both;
-- show heartbeat age in red when stale; flag silent arms; flag N arms going silent in the same minute;
-- orchestration and collection live on the data host; the laptop only pulls and displays;
-- all conditions accounted for, explicit filters when needed, `n` next to every aggregate, italic estimates, starred provisional values;
-- detach with `setsid nohup … < /dev/null &`; kill by exact command line; copy scripts, don't paste them through ssh.
-
-## Layout
-
+```bash
+python3 -m http.server 8399 --bind 127.0.0.1 --directory my-campaign
 ```
-SKILL.md                 agent instructions (the skill)
-templates/               plan.minimal.json · plan.example.json · collector.py · dashboard.html · serve.sh · hub.html · hub-serve.sh
-adapters/                jsonl_events.py · csv_rows.py · log_regex.py · multi_lane.py
-scripts/                 simulate.py · smoke_test.sh · gen_scenarios.py · scenarios.sh · logline.py · snapshot.py
-reference/               live-schema.md · plot-spec.md · ops-lessons.md · design-guide.md
-docs/                    screenshots
+
+Open <http://localhost:8399>. Confirm the data timestamp advances across two collection cycles.
+Stop foreground processes with Ctrl-C. For a remote campaign, run collection on the data host and
+configure [serve.sh](templates/serve.sh) to pull the resulting file; use an existing supervisor or
+the Linux detachment recipe in [SKILL.md](SKILL.md) for unattended operation.
+
+## Design for the experiment
+
+A good dashboard should make the important comparison obvious without hiding the rest of the evidence.
+The [design guide](reference/design-guide.md) turns that goal into a concrete review:
+
+- Choose a coherent typography, palette, spacing, and chart system; avoid a wall of interchangeable cards.
+- Give the primary question a prominent comparison. Keep operational summaries compact.
+- Fit more **useful comparisons** into the viewport through alignment and hierarchy, not tiny text.
+- Account for every condition through visible groups, filters, or facets. Show sample sizes and units.
+- Inspect desktop and narrow views, sparse and dense data, theme contrast, and actual interactions.
+
+Adapting a title and accent color is not a complete design pass. Conversely, an existing design that
+already serves the experiment does not need a cosmetic rewrite.
+
+## Read results honestly
+
+- **Freshness matters.** A responsive page can still show stale data. Check the heartbeat and source files.
+- **Provisional is not finished.** Unfinished and auto-closed values are starred. Auto-closure can mean
+  a run exceeded its budget without an explicit completion status; it is not proof of success.
+  Auto-closed arms are excluded from baseline medians and gate tests, but may appear in other summaries.
+- **Estimates are estimates.** ETAs use budgets, progress, completed durations, and phase priors.
+  Unknown remains unknown; overdue work is highlighted.
+- **Units are literal.** A `%` label does not turn `0.91` into `91`; align source values and plan units.
+- **Gates are aids to review.** The collector offers paired Wilcoxon, Mann–Whitney, and Welch tests,
+  with provisional results while comparison arms remain unresolved. `min_effect: 0.01` means a
+  1% relative improvement, not one percentage point. These repeated checks do not implement sequential
+  or multiple-testing corrections. A failed gate does not by itself refute a hypothesis.
+- **Grouping is a scientific choice.** Pool comparable replicates; facet or separate materially different
+  tasks and environments. A chart cannot establish that pooling is valid.
+
+## Record decisions and share a snapshot
+
+Pass `--state my-campaign/state.json` to the collector to include narrative updates:
+
+```bash
+python3 scripts/logline.py my-campaign/state.json now_doing "Reviewing completed runs"
+python3 scripts/logline.py my-campaign/state.json log "Investigating a stalled arm"
 ```
+
+Record phase completion or hypothesis verdicts only when supported by evidence. To freeze a collected
+page for sharing—even before a campaign finishes—run:
+
+```bash
+python3 scripts/snapshot.py my-campaign/index.html my-campaign/live.json my-campaign/snapshot.html
+```
+
+The resulting HTML includes the data and opens offline. Check its contents before sharing: it can
+contain experiment descriptions, paths, logs, and results.
+
+## Troubleshooting and validation
+
+| Symptom | First check |
+|---|---|
+| No arms readable | Match plan arm IDs to directories/files; check `--runs`, adapter choice, and printed sources. |
+| Metric or chart missing | Match numeric record keys to metric IDs and axes; check plot references with `--lint`. |
+| Finished run appears silent | Write the completion marker supported by that specific adapter. |
+| Page loads but data is stale | Check collector output timestamp, then any remote puller and browser fetch errors. |
+| CSV option not applied | Repeat the flag for each setting: `--adapter-arg time_col=t --adapter-arg step_col=step`. |
+
+For maintainers, `scripts/scenarios.sh` exercises CSV without timestamps, result-only runs, and a
+hostile plan. `scripts/smoke_test.sh` runs a simulated campaign and can capture screenshots when Chrome
+is available. Read these scripts first: they recreate their work directories, and the smoke test starts
+background processes. Use disposable paths. Automated fixtures do not replace visual or interaction review.
+
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| [SKILL.md](SKILL.md) | Agent routing, workflow, data integrity, and completion criteria |
+| [reference/design-guide.md](reference/design-guide.md) | Visual composition and adversarial review |
+| [reference/live-schema.md](reference/live-schema.md) / [plot-spec.md](reference/plot-spec.md) | Data and chart contracts |
+| [reference/ops-lessons.md](reference/ops-lessons.md) | Operational failure modes and lessons |
+| `templates/` | Plans, collector, dashboard, and optional remote/hub serving helpers |
+| `adapters/` | JSONL, CSV, regex-log, and multi-lane readers |
+| `scripts/` | Simulation, regression fixtures, narrative updates, and snapshots |
+| `docs/` | Screenshots and standalone simulated demo |
 
 ## License
 
-MIT
+[MIT](LICENSE)

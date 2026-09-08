@@ -25,6 +25,6 @@
     { "id": "final_bar", "tab": "overview", "type": "bar", "title": "Final accuracy by learning rate", "y": "final_acc", "group": "lr", "agg": "median",
       "explain": "Bar = median over seeds, dots = runs; starred while a run is still training." }
   ],
-  "gates": [ { "id": "G1", "name": "G1 · best lr beats 1e-4 by ≥ 1 point (Welch t)", "status": "pending",
+  "gates": [ { "id": "G1", "name": "G1 · 1e-3 improves over 1e-4 by ≥1% (Welch t)", "status": "pending",
                "test": { "kind": "welch_t", "scalar": "final_acc", "a": { "lr": "1e-3" }, "b": { "lr": "1e-4" }, "alpha": 0.05, "min_effect": 0.01 } } ]
 }
